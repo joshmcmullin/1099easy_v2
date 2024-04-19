@@ -4,8 +4,9 @@ import axios from 'axios';
 
 export default function Home() {
     const [formData, setFormData] = useState({ 
-        username: '',
-        email: ''
+        email: '',
+        password: '',
+        confirmPassword: ''
     });
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -14,11 +15,20 @@ export default function Home() {
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (formData.password !== formData.confirmPassword) {
+            console.error("passwords do not match");
+            return;
+        }
         try {
-            const response = await axios.post('http://localhost:8080/data', formData);
+            const response = await axios.post('http://localhost:8080/api/signup', {
+                email: formData.email,
+                password: formData.password
+            });
             console.log('Server Response:', response.data);
-        } catch (error: unknown) {
-            if (error instanceof Error) {
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                console.error("Error sending data:", error.response.data);
+            } else if (error instanceof Error) {
                 console.error('Error sending data:', error.message);
             } else {
                 console.error('Unexpected error:', error);
@@ -27,35 +37,23 @@ export default function Home() {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <label>
-                Username:
-                <input type="text" name="username" value={formData.username} onChange={handleChange} className="p-1 mr-2 border-2 border-neutral-700"/>
-            </label>
-            <label>
-                Email:
-                <input type="text" name="email" value={formData.email} onChange={handleChange} className="p-1 mr-2 border-2 border-neutral-700"/>
-            </label>
-            <button type="submit" className="p-1 border-2 border-neutral-700">Submit</button>
-        </form>
+        <div>
+            <form className="my-5" onSubmit={handleSubmit}>
+                <label>
+                    Email:
+                    <input type="email" name="email" value={formData.email} onChange={handleChange} className="p-1 mr-2 border-2 border-neutral-700"/>
+                </label>
+                <label>
+                    Password:
+                    <input type="password" name="password" value={formData.password} onChange={handleChange} className="p-1 mr-2 border-2 border-neutral-700"/>
+                </label>
+                <label>
+                    Confirm Password:
+                    <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} className="p-1 mr-2 border-2 border-neutral-700"/>
+                </label>
+                <button type="submit" className="p-1 border-2 border-neutral-700">Submit</button>
+            </form>
+            <Link href="/" className="link-style p-1 border-2 border-neutral-700">Home</Link>
+        </div>
     );
 }
-// const Signup: React.FC = () => {
-//     return (
-//         <div>
-//             <h1>Signup Page</h1>
-//             <form onSubmit={handleSubmit}>
-//                 <label htmlFor="username">Username:</label>
-//                 <input type="text" id="username" name="username" required className="p-1 mr-2 border-2 border-neutral-700"/>
-//                 <label htmlFor="password">Password:</label>
-//                 <input type="password" id="password" name="password" required className="p-1 mr-2 border-2 border-neutral-700"/>
-//                 <label htmlFor="password">Confirm Password:</label>
-//                 <input type="password" id="confirmPassword" name="confirmPassword" required className="p-1 mr-2 border-2 border-neutral-700"/>
-//                 <button type="submit" className="p-1 border-2 border-neutral-700">Sign up</button>
-//             </form>
-//             <Link href="/" className="link-style p-1 border-2 border-neutral-700">Home</Link>
-//         </div>
-//     )
-// }
-
-// export default Signup;
