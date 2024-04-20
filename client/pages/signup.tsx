@@ -17,13 +17,11 @@ export default function Home() {
         e.preventDefault();
         if (formData.password !== formData.confirmPassword) {
             console.error("passwords do not match");
+            alert("Passwords do not match");
             return;
         }
         try {
-            const response = await axios.post('http://localhost:8080/api/signup', {
-                email: formData.email,
-                password: formData.password
-            });
+            const response = await axios.post('http://localhost:8080/api/signup', formData);
             console.log('Server Response:', response.data);
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
