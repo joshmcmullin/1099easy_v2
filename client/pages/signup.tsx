@@ -1,8 +1,10 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
+import { useRouter } from 'next/router';
 
 export default function Home() {
+    const router = useRouter();
     const [formData, setFormData] = useState({ 
         email: '',
         password: '',
@@ -33,6 +35,7 @@ export default function Home() {
         try {
             const response = await axios.post('http://localhost:8080/api/signup', formData);
             console.log('Server Response:', response.data);
+            router.push('/dashboard');
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
                 console.error("Error sending data:", error.response.data);

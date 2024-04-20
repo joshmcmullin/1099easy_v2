@@ -4,8 +4,9 @@ const app = express();
 const cors = require("cors");
 const bodyParser = require('body-parser');
 const { Pool } = require('pg');
-const { sendResponse, sendError } = require('./utility');
+const { sendResponse, sendError, authenticateToken } = require('./utility');
 const validator = require('validator');
+const jwt = require('jsonwebtoken');
 const PORT = 8080;
 
 // Configure database connection
@@ -20,10 +21,22 @@ const pool = new Pool({
 app.use(bodyParser.json());
 app.use(cors());
 
-// Queries postgres db. Returns and prints to /api/signup the query.
+// Queries postgres db. Returns and prints to /api/signup the query
 app.get('/api/signup', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM app_user');
+        sendResponse(res, 200, result.rows);
+    } catch (err) {
+        console.error(err);
+        sendError(res, 500, 'Server error');
+    }
+});
+
+// Queries postgres db to display all entities for the current user
+app.get('/dashboard', authenticateToken, async(req, res) => {
+    try {
+        const userId = req.user.userId;
+        const result = await pool.query('SELECT * FROM entity WHERE user_id = $1', [userId]);
         sendResponse(res, 200, result.rows);
     } catch (err) {
         console.error(err);
@@ -37,19 +50,25 @@ app.post('/api/login', async (req, res) => {
     try {
         console.log(req.body);
         const { email, password } = req.body;
-        // Check if the email is associated with an account
-        const userResult = await pool.query('SELECT email, password FROM app_user WHERE email = $1', [email]);
+        // Check if the email is associated with an account, parameterized to protect from SQL injection
+        const userResult = await pool.query('SELECT * FROM app_user WHERE email = $1', [email]);
         if (userResult.rows.length === 0) {
             console.log("Account not found");
             return sendError(res, 404, 'Account not found');
         }
+        const user = userResult.rows[0];
         // Check that password matches
-        const storedPassword = userResult.rows[0].password;
-        if (password !== storedPassword) {
+        if (password !== user.password) {
             console.log("Incorrect password");
             return sendError(res, 401, 'Incorrect password');
         }
-        sendResponse(res, 200, "Login successful");
+        // create authentication token
+        const token = jwt.sign(
+            { userId: user.user_id, email: user.email },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h'}
+        );
+        sendResponse(res, 200, { message: "Login successful", token });
     } catch (err) {
         console.error(err);
         sendError(res, 500, 'Server error occured');

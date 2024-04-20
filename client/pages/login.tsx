@@ -29,7 +29,14 @@ export default function Login() {
         try {
             const response = await axios.post('http://localhost:8080/api/login', formData);
             console.log('Server Response:', response.data);
-            router.push('/dashboard');
+            console.log("TOKEN: ", response.data.data.token);
+            // authenticate with token
+            if (response.data.data.token) {
+                localStorage.setItem('token', response.data.data.token);
+                router.push('/dashboard');
+            } else {
+                console.error("Token not provided in response");
+            }
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
                 console.error("Error sending data:", error.response.data);
