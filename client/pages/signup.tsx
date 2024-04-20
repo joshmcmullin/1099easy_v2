@@ -20,6 +20,16 @@ export default function Home() {
             alert("Passwords do not match");
             return;
         }
+        if (formData.email === '') {
+            console.error("Email cannot be left blank!");
+            alert("Email cannot be left blank!");
+            return;
+        }
+        if (formData.password === '') {
+            console.log("Password cannot be left blank!");
+            alert("Password cannot be left blank!");
+            return;
+        }
         try {
             const response = await axios.post('http://localhost:8080/api/signup', formData);
             console.log('Server Response:', response.data);

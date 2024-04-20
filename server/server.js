@@ -31,8 +31,34 @@ app.get('/api/signup', async (req, res) => {
     }
 });
 
+// TODO: Update password check to work with encryption
+// TODO: Consult OWASP for security
+app.post('/api/login', async (req, res) => {
+    try {
+        console.log(req.body);
+        const { email, password } = req.body;
+        // Check if the email is associated with an account
+        const userResult = await pool.query('SELECT email, password FROM app_user WHERE email = $1', [email]);
+        if (userResult.rows.length === 0) {
+            console.log("Account not found");
+            return sendError(res, 404, 'Account not found');
+        }
+        // Check that password matches
+        const storedPassword = userResult.rows[0].password;
+        if (password !== storedPassword) {
+            console.log("Incorrect password");
+            return sendError(res, 401, 'Incorrect password');
+        }
+        sendResponse(res, 200, "Login successful");
+    } catch (err) {
+        console.error(err);
+        sendError(res, 500, 'Server error occured');
+    }
+});
+
 // TODO: Consult OWASP for security
 // TODO: Currently storing passwords in plain text, will need encryption
+// TODO: Redirect to dashboard after successful account creation
 app.post('/api/signup', async (req, res) => {
     try {
         console.log(req.body);
