@@ -14,6 +14,7 @@ export default function Dashboard() {
         state: string;
         zip: string;
         user_id: number;
+        entity_tin: string;
     }
 
     const router = useRouter();
@@ -62,6 +63,7 @@ export default function Dashboard() {
                         <th className="p-1 border-2 border-neutral-700">state</th>
                         <th className="p-1 border-2 border-neutral-700">zip</th>
                         <th className="p-1 border-2 border-neutral-700">user_id</th>
+                        <th className="p-1 border-2 border-neutral-700">entity_tin</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -74,12 +76,14 @@ export default function Dashboard() {
                             <td className="p-1 border-2 border-neutral-700">{entity.state}</td>
                             <td className="p-1 border-2 border-neutral-700">{entity.zip}</td>
                             <td className="p-1 border-2 border-neutral-700">{entity.user_id}</td>
+                            <td className="p-1 border-2 border-neutral-700">{entity.entity_tin}</td>
                         </tr>
                     ))}
                 </tbody>
             </table>
             <div className="my-5"><Link href='/' className="link-style p-2 border-2 border-neutral-700">Home</Link></div>
             <div className="my-5"><Link href='/login' className="link-style p-2 border-2 border-neutral-700">Sign out</Link></div>
+            <div className="my-5"><Link href='/add_entity' className="link-style p-2 border-2 border-neutral-700">Add Entity</Link></div>
         </div>
     )
 }
