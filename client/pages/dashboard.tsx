@@ -5,24 +5,25 @@ import { useRouter } from 'next/router';
 
 export default function Dashboard() {
 
+    // Entity interface follows structure of database table
     interface Entity {
         entity_id: number;
         name: string;
-        street?: string;
-        city?: string;
-        state?: string;
-        zip?: string;
+        street: string;
+        city: string;
+        state: string;
+        zip: string;
         user_id: number;
     }
-
 
     const router = useRouter();
     const [entities, setEntities] = useState<Entity[]>([]);
 
+    // Fetch entities upon loading page
     useEffect(() => {
         const fetchEntities = async () => {
             try {
-                const token = localStorage.getItem('token'); // Assuming the token is stored in localStorage after login
+                const token = localStorage.getItem('token');
                 if (!token) {
                     console.error("No token found, redirecting to login");
                     router.push('/login');
@@ -40,8 +41,9 @@ export default function Dashboard() {
         };
 
         fetchEntities();
-    }, []);
+    }, [router]); // Router included to satisfy ESLint
 
+    // Fetch entities on changes
     useEffect(() => {
         console.log("Entities updated:", entities);
     }, [entities]);
