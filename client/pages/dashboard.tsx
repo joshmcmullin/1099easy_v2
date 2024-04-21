@@ -3,7 +3,7 @@ import Link from 'next/link';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 
-export default function dashboard() {
+export default function Dashboard() {
 
     interface Entity {
         entity_id: number;

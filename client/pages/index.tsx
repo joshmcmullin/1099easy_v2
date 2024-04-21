@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link';
 
-function index() {
+export default function Index() {
   return (
     <div>
       <div>Login using the button below!</div>
@@ -11,5 +11,3 @@ function index() {
     </div>
   )
 }
-
-export default index
