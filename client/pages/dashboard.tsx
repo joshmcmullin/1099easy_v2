@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import axios from 'axios';
 import { useRouter } from 'next/router';
+import axiosApi from '../utils/axiosApi';
+import { useLogout } from '../utils/auth';
 
 export default function Dashboard() {
 
@@ -18,23 +19,15 @@ export default function Dashboard() {
     }
 
     const router = useRouter();
+    const logout = useLogout();
     const [entities, setEntities] = useState<Entity[]>([]);
 
     // Fetch entities upon loading page
     useEffect(() => {
         const fetchEntities = async () => {
             try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    console.error("No token found, redirecting to login");
-                    router.push('/login');
-                    return;
-                }
-                const response = await axios.get('http://localhost:8080/dashboard', {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
+                const response = await axiosApi.get('/dashboard');
+                console.log('Dashboard data:', response.data);
                 setEntities(response.data.data as Entity[]);
             } catch (error) {
                 console.error("Failed to fetch entities:", error);
@@ -81,8 +74,7 @@ export default function Dashboard() {
                     ))}
                 </tbody>
             </table>
-            <div className="my-5"><Link href='/' className="link-style p-2 border-2 border-neutral-700">Home</Link></div>
-            <div className="my-5"><Link href='/login' className="link-style p-2 border-2 border-neutral-700">Sign out</Link></div>
+            <div className="my-5"><button onClick={logout} className="link-style p-2 border-2 border-neutral-700">Sign out</button></div>
             <div className="my-5"><Link href='/add_entity' className="link-style p-2 border-2 border-neutral-700">Add Entity</Link></div>
         </div>
     )

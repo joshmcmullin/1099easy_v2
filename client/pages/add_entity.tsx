@@ -2,6 +2,7 @@ import React, { useState, ChangeEvent, FormEvent } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import axiosApi from '../utils/axiosApi';
 
 export default function AddEntity() {
     const router = useRouter();
@@ -42,17 +43,6 @@ export default function AddEntity() {
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const token = localStorage.getItem('token');
-        if (!token) {
-            console.error("No token found!");
-            alert("You are not logged in!");
-            return;
-        }
-        const config = {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        }
         if (formData.name === '') {
             console.error("Name cannot be left blank!");
             alert("Name cannot be left blank!");
@@ -89,16 +79,25 @@ export default function AddEntity() {
             return;
         }
         try {
-            const response = await axios.post('http://localhost:8080/api/add_entity', formData, config);
+            const response = await axiosApi.post('/api/add_entity', formData);
             console.log('Server Response:', response.data);
             router.push('/dashboard');
         } catch (error) {
-            if (axios.isAxiosError(error) && error.response) {
-                console.error("Error sending data:", error.response.data);
-            } else if (error instanceof Error) {
-                console.error('Error sending data:', error.message);
+            if (axios.isAxiosError(error)) {
+                // This means the error response is from Axios
+                if (error.response) {
+                    // The server responded with a status code outside the 2xx range
+                    console.error("Server responded with an error:", error.response.status, error.response.data);
+                } else if (error.request) {
+                    // The request was made but no response was received
+                    console.error("No response received:", error.request);
+                } else {
+                    // Something else happened in setting up the request
+                    console.error("Error setting up the request:", error.message);
+                }
             } else {
-                console.error('Unexpected error:', error);
+                // The error is not from Axios
+                console.error("Error during entity addition:", error);
             }
         }
     };

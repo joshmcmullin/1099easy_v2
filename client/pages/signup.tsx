@@ -1,7 +1,7 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import Link from 'next/link';
-import axios from 'axios';
 import { useRouter } from 'next/router';
+import axiosApi from '../utils/axiosApi';
 
 export default function Signup() {
     const router = useRouter();
@@ -33,17 +33,11 @@ export default function Signup() {
             return;
         }
         try {
-            const response = await axios.post('http://localhost:8080/api/signup', formData);
+            const response = await axiosApi.post('/api/signup', formData);
             console.log('Server Response:', response.data);
             router.push('/dashboard');
         } catch (error) {
-            if (axios.isAxiosError(error) && error.response) {
-                console.error("Error sending data:", error.response.data);
-            } else if (error instanceof Error) {
-                console.error('Error sending data:', error.message);
-            } else {
-                console.error('Unexpected error:', error);
-            }
+            console.error("Signup error:", error);
         }
     };
 
