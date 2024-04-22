@@ -77,7 +77,6 @@ app.post('/api/login', async (req, res) => {
 
 // TODO: Consult OWASP for security
 // TODO: Currently storing passwords in plain text, will need encryption
-// TODO: Redirect to dashboard after successful account creation
 app.post('/api/signup', async (req, res) => {
     try {
         console.log(req.body);
@@ -114,7 +113,7 @@ app.post('/api/signup', async (req, res) => {
 app.post('/api/add_entity', authenticateToken, async (req, res) => {
     try {
         console.log(req.body)
-        // logic check here to make sure entity is good to be added
+        // Logic check here to make sure entity is good to be added
         const { name, street, city, state, zip, entity_tin } = req.body;
         // Check for required fields
         if (!name || !street || !city || !state || !zip || !entity_tin) {
@@ -127,7 +126,7 @@ app.post('/api/add_entity', authenticateToken, async (req, res) => {
         if (result.rows.length > 0) {
             return sendError(res, 400, "An entity with this TIN already exists.");
         }
-        // insert entity
+        // Insert entity
         const insertQuery = 'INSERT INTO entity (name, street, city, state, zip, entity_tin, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7)';
         await pool.query(insertQuery, [name, street, city, state, zip, entity_tin, userId]);
         res.status(201).json({ message: "Entity added successfully" });

@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// Standardizing axios use
 const axiosApi = axios.create({
     baseURL: 'http://localhost:8080/',
 });

@@ -30,7 +30,7 @@ export default function Login() {
             const response = await axios.post('http://localhost:8080/api/login', formData);
             console.log('Server Response:', response.data);
             console.log("TOKEN: ", response.data.data.token);
-            // authenticate with token
+            // Authenticate with token
             if (response.data.data.token) {
                 localStorage.setItem('token', response.data.data.token);
                 router.push('/dashboard');

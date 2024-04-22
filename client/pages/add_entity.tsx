@@ -23,7 +23,6 @@ export default function AddEntity() {
         const { value } = e.target;
         let digits = value.replace(/\D/g, ''); // Strip all non-digits
         let formattedInput = '';
-    
         // Split the digits based on their position and add dashes appropriately
         for (let i = 0; i < digits.length; i++) {
             if (i === 3 || i === 5) {
@@ -31,13 +30,10 @@ export default function AddEntity() {
             }
             formattedInput += digits[i];
         }
-    
         // Limit the length of digits to match SSN format (9 digits max)
         if (formattedInput.length > 11) {
             formattedInput = formattedInput.slice(0, 11);
         }
-    
-        // Update the state with the newly formatted input
         setFormData({ ...formData, entity_tin: formattedInput });
     };
 

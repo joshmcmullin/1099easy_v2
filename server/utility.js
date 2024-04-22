@@ -33,4 +33,6 @@ function authenticateToken(req, res, next) {
     });
 }
 
+// TODO: Add generateTokens function to create access & refresh tokens
+
 module.exports = { sendResponse, sendError, authenticateToken };
