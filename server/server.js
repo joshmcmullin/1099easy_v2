@@ -136,6 +136,22 @@ app.post('/api/add_entity', authenticateToken, async (req, res) => {
     }
 });
 
+app.post('/api/refresh_token', async (req, res) => {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+        return sendError(res, 401, "Refresh Token is required")
+    }
+    try {
+        const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+        const newAccessToken = jwt.sign({ userId: payload.userId }, process.env.JWT_ACCESS_SECRET, { expiresIn: '15m'});
+        // Optionally create a new refresh token
+        const newRefreshToken = jwt.sign({ userId: payload.userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d'});
+        return res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+    } catch (err) {
+        return res.status(403).json({ message: "Invalid Refresh Token!"});
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
 });
