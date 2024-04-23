@@ -29,10 +29,10 @@ export default function Login() {
         try {
             const response = await axios.post('http://localhost:8080/api/login', formData);
             console.log('Server Response:', response.data);
-            console.log("TOKEN: ", response.data.data.token);
+            console.log("TOKEN: ", response.data.data.accessToken);
             // Authenticate with token
-            if (response.data.data.token) {
-                localStorage.setItem('token', response.data.data.token);
+            if (response.data.data.accessToken) {
+                localStorage.setItem('accessToken', response.data.data.accessToken);
                 router.push('/dashboard');
             } else {
                 console.error("Token not provided in response");

@@ -5,7 +5,7 @@ import { useRouter } from 'next/router';
 export const useLogout = () => {
     const router = useRouter();
     const logout = () => {
-        localStorage.removeItem('token');
+        localStorage.removeItem('accessToken');
         router.push('/login');
     }
     return logout;

@@ -4,9 +4,10 @@ const app = express();
 const cors = require("cors");
 const bodyParser = require('body-parser');
 const { Pool } = require('pg');
-const { sendResponse, sendError, authenticateToken } = require('./utility');
+const { sendResponse, sendError, authenticateToken, generateTokens } = require('./utility');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const PORT = 8080;
 
 // Configure database connection
@@ -19,7 +20,11 @@ const pool = new Pool({
 });
 
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true // Allow cookies to be sent with requests
+}));
+app.use(cookieParser());
 
 // Queries postgres db. Returns and prints to /api/signup the query
 app.get('/api/signup', async (req, res) => {
@@ -62,13 +67,17 @@ app.post('/api/login', async (req, res) => {
             console.log("Incorrect password");
             return sendError(res, 401, 'Incorrect password');
         }
-        // create authentication token
-        const token = jwt.sign(
-            { userId: user.user_id, email: user.email },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h'}
-        );
-        sendResponse(res, 200, { message: "Login successful", token });
+        // create authentication tokens
+        const tokens = generateTokens(user);
+        const accessToken = tokens.accessToken;
+        const refreshToken = tokens.refreshToken;
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV !== 'development', // Set secure to true in production
+            sameSite: 'strict',
+            path: '/api/refresh_token'
+        });
+        sendResponse(res, 200, { message: "Login successful", accessToken });
     } catch (err) {
         console.error(err);
         sendError(res, 500, 'Server error occured');
@@ -137,7 +146,8 @@ app.post('/api/add_entity', authenticateToken, async (req, res) => {
 });
 
 app.post('/api/refresh_token', async (req, res) => {
-    const { refreshToken } = req.body;
+    console.log("Received refresh token request");
+    const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
         return sendError(res, 401, "Refresh Token is required")
     }
@@ -146,7 +156,13 @@ app.post('/api/refresh_token', async (req, res) => {
         const newAccessToken = jwt.sign({ userId: payload.userId }, process.env.JWT_ACCESS_SECRET, { expiresIn: '15m'});
         // Optionally create a new refresh token
         const newRefreshToken = jwt.sign({ userId: payload.userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d'});
-        return res.json({ accessToken: newAccessToken, refreshToken: newRefreshToken });
+        res.cookie('refreshToken', newRefreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV !== 'development',
+            sameSite: 'strict',
+            path: '/api/refresh_token'
+        });
+        return res.json({ accessToken: newAccessToken });
     } catch (err) {
         return res.status(403).json({ message: "Invalid Refresh Token!"});
     }
