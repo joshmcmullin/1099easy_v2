@@ -71,12 +71,14 @@ app.post('/api/login', async (req, res) => {
         const tokens = generateTokens(user);
         const accessToken = tokens.accessToken;
         const refreshToken = tokens.refreshToken;
+        console.log("Setting login refresh token cookie");
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV !== 'development', // Set secure to true in production
             sameSite: 'strict',
-            path: '/api/refresh_token'
+            path: '/'
         });
+        console.log(res.getHeaders());
         sendResponse(res, 200, { message: "Login successful", accessToken });
     } catch (err) {
         console.error(err);
@@ -147,21 +149,25 @@ app.post('/api/add_entity', authenticateToken, async (req, res) => {
 
 app.post('/api/refresh_token', async (req, res) => {
     console.log("Received refresh token request");
+    console.log("Headers: ", req.headers); // log headers to check for cookies
     const refreshToken = req.cookies.refreshToken;
+    console.log("REFRESH TOKEN HERE:", refreshToken);
     if (!refreshToken) {
         return sendError(res, 401, "Refresh Token is required")
     }
     try {
         const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-        const newAccessToken = jwt.sign({ userId: payload.userId }, process.env.JWT_ACCESS_SECRET, { expiresIn: '15m'});
+        const newAccessToken = jwt.sign({ userId: payload.userId }, process.env.JWT_ACCESS_SECRET, { expiresIn: '1m'});
         // Optionally create a new refresh token
         const newRefreshToken = jwt.sign({ userId: payload.userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d'});
+        console.log("Setting newRefresh token cookie");
         res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV !== 'development',
             sameSite: 'strict',
-            path: '/api/refresh_token'
+            path: '/'
         });
+        console.log(res.getHeaders());
         return res.json({ accessToken: newAccessToken });
     } catch (err) {
         return res.status(403).json({ message: "Invalid Refresh Token!"});

@@ -3,10 +3,12 @@ import axios, { AxiosError } from 'axios';
 // Standardizing axios use
 const axiosApi = axios.create({
     baseURL: 'http://localhost:8080/',
+    withCredentials: true
 });
 
 // Add auth token header to requests
 axiosApi.interceptors.request.use(function (config) {
+    console.log("Line 10 triggered in AxiosAPI");
     const accessToken = localStorage.getItem('accessToken');
     if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
@@ -23,9 +25,9 @@ axiosApi.interceptors.response.use(response => response, async error => {
     if (error.response.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true; // Marking request as tried
         try {
-            console.log("Triggered first");
-            const refreshResponse = await axios.post('http://localhost:8080/api/refresh_token');
-            console.log("AxiosAPI try triggered. ", refreshResponse.data.accessToken);
+            const refreshResponse = await axios.post('http://localhost:8080/api/refresh_token', {}, {
+                withCredentials: true
+            });
             localStorage.setItem('accessToken', refreshResponse.data.accessToken); // Update the access token in localStorage
             originalRequest.headers['Authorization'] = 'Bearer ' + refreshResponse.data.accessToken; // Update the token in the original request
             return axiosApi(originalRequest); // Retry the original request with the new token
@@ -34,10 +36,12 @@ axiosApi.interceptors.response.use(response => response, async error => {
                 const axiosError = error as AxiosError; // Now TypeScript knows it's an AxiosError
                 console.error('Axios Error during token refresh:', axiosError.message);
                 if (axiosError.response) {
-                    console.error("Data:", axiosError.response.data);
-                    console.error("Status:", axiosError.response.status);
-                    console.error("Headers:", axiosError.response.headers);
+                    console.log("Line 37 triggered in AxiosAPI");
+                    console.error("Data:", axiosError.response.data); // TODO: Start debugging here, line 37 triggering.
+                    console.error("Status:", axiosError.response.status); 
+                    console.error("Headers:", axiosError.response.headers); 
                 } else if (axiosError.request) {
+                    console.log("Line 42 triggered in AxiosAPI");
                     // The request was made but no response was received
                     console.error("Request made, no response received.");
                 } else {

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import axiosApi from '../utils/axiosApi';
+import { jwtDecode } from 'jwt-decode';
 
 export default function AddEntity() {
     const router = useRouter();
@@ -39,39 +40,10 @@ export default function AddEntity() {
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (formData.name === '') {
-            console.error("Name cannot be left blank!");
-            alert("Name cannot be left blank!");
-            return;
-        }
-        if (formData.street === '') {
-            console.log("Street cannot be left blank!");
-            alert("Street cannot be left blank!");
-            return;
-        }
-        if (formData.city === '') {
-            console.error("City cannot be left blank!");
-            alert("City cannot be left blank!");
-            return;
-        }
-        if (formData.state === '') {
-            console.log("State cannot be left blank!");
-            alert("State cannot be left blank!");
-            return;
-        }
-        if (formData.state.length !== 2) {
-            console.log("State should only be two characters!");
-            alert("State should only be 2 characters!");
-            return;
-        }
-        if (formData.zip === '') {
-            console.error("ZIP cannot be left blank!");
-            alert("ZIP cannot be left blank!");
-            return;
-        }
-        if (formData.entity_tin === '') {
-            console.log("TIN cannot be left blank!");
-            alert("TIN cannot be left blank!");
+        // Validation checks
+        if (!formData.name || !formData.street || !formData.city || !formData.state || !formData.zip || !formData.entity_tin) {
+            console.error("All fields must be filled!");
+            alert("All fields must be filled!");
             return;
         }
         try {
@@ -79,20 +51,12 @@ export default function AddEntity() {
             console.log('Server Response:', response.data);
             router.push('/dashboard');
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                // This means the error response is from Axios
-                if (error.response) {
-                    // The server responded with a status code outside the 2xx range
-                    console.error("Server responded with an error:", error.response.status, error.response.data);
-                } else if (error.request) {
-                    // The request was made but no response was received
-                    console.error("No response received:", error.request);
-                } else {
-                    // Something else happened in setting up the request
-                    console.error("Error setting up the request:", error.message);
+            if (axios.isAxiosError(error) && error.response) {
+                console.error("Server responded with an error:", error.response.status, error.response.data);
+                if (error.response.status === 401) {
+                    router.push('/login');
                 }
             } else {
-                // The error is not from Axios
                 console.error("Error during entity addition:", error);
             }
         }

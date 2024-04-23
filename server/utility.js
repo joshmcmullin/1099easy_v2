@@ -20,13 +20,12 @@ function sendError(res, status, message) {
 // Utility function for user authentication
 function authenticateToken(req, res, next) {
     const token = req.headers['authorization']?.split(' ')[1];
-    if (token == null) {
-        return sendError(res, 401, 'No token provided');
+    if (!token) {
+        return res.status(401).json({ message: 'No token provided' });
     }
-    jwt.verify(token, process.env.JWT_ACCESS_SECRET, (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
-            console.error("JWT Verification Error:", err.message);
-            return sendError(res, 403, 'Invalid token');
+            return res.status(401).json({ message: 'Invalid token' });
         }
         req.user = user;
         next();
@@ -35,7 +34,7 @@ function authenticateToken(req, res, next) {
 
 // Utility function for generating access & refresh tokens for authentication
 function generateTokens(user) {
-    const accessToken = jwt.sign({ userId: user.user_id }, process.env.JWT_ACCESS_SECRET, { expiresIn: '15m' });
+    const accessToken = jwt.sign({ userId: user.user_id }, process.env.JWT_ACCESS_SECRET, { expiresIn: '1m' });
     const refreshToken = jwt.sign({ userId: user.user_id }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
     return { accessToken, refreshToken };
 }
