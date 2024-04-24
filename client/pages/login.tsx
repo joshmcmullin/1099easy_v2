@@ -28,7 +28,7 @@ export default function Login() {
             return;
         }
         try {
-            const response = await axiosApi.post('http://localhost:8080/api/login', formData);
+            const response = await axiosApi.post('/api/login', formData);
             console.log('Server Response:', response.data);
             console.log("TOKEN: ", response.data.data.accessToken);
             // Authenticate with token

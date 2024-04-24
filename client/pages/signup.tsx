@@ -2,6 +2,7 @@ import React, { useState, ChangeEvent, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import axiosApi from '../utils/axiosApi';
+import axios from 'axios';
 
 export default function Signup() {
     const router = useRouter();
@@ -35,9 +36,26 @@ export default function Signup() {
         try {
             const response = await axiosApi.post('/api/signup', formData);
             console.log('Server Response:', response.data);
-            router.push('/dashboard');
+            console.log("SIGNUP TOKEN: ", response.data.data.accessToken);
+            // Authenticate with token
+            if (response.data.data.accessToken) {
+                localStorage.setItem('accessToken', response.data.data.accessToken);
+                router.push('/dashboard');
+            } else {
+                console.error("Token not provided in response");
+            }
         } catch (error) {
-            console.error("Signup error:", error);
+            if (axios.isAxiosError(error) && error.response) {
+                console.error("Error sending data:", error.response.data);
+                if (error.response.status === 404) {
+                    alert("Account not found");
+                } else {
+                    alert("login failed: " + error.response.data.error);
+                }
+            } else {
+                alert("An error occured. Please try again later.");
+                console.error("Error:", error);
+            }
         }
     };
 

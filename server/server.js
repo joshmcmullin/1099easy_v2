@@ -22,20 +22,9 @@ const pool = new Pool({
 app.use(bodyParser.json());
 app.use(cors({
     origin: 'http://localhost:3000',
-    credentials: true // Allow cookies to be sent with requests
+    credentials: true
 }));
 app.use(cookieParser());
-
-// Queries postgres db. Returns and prints to /api/signup the query
-app.get('/api/signup', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM app_user');
-        sendResponse(res, 200, result.rows);
-    } catch (err) {
-        console.error(err);
-        sendError(res, 500, 'Server error');
-    }
-});
 
 // Queries postgres db to display all entities for the current user
 app.get('/dashboard', authenticateToken, async(req, res) => {
@@ -125,7 +114,21 @@ app.post('/api/signup', async (req, res) => {
         }
         // Insert new user into the database
         const insertResult = await pool.query('INSERT INTO app_user (email, password) VALUES ($1, $2) RETURNING *', [email, password]);
-        sendResponse(res, 201, insertResult.rows[0]);
+        const user = insertResult.rows[0];
+        console.log("USER IS THIS: ", user);
+        // Generate authentication tokens
+        const tokens = generateTokens(user);
+        const accessToken = tokens.accessToken;
+        const refreshToken = tokens.refreshToken;
+        console.log("Setting signup refresh token cookie");
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV !== 'development', // Set secure to true in production
+            sameSite: 'strict',
+            path: '/'
+        })
+        //sendResponse(res, 201, insertResult.rows[0]);
+        sendResponse(res, 201, { message: 'Signup successful', accessToken });
     } catch (err) {
         console.error(err);
         sendError(res, 500, 'Server error occured');
