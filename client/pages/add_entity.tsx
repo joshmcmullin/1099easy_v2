@@ -3,7 +3,6 @@ import Link from 'next/link';
 import axios from 'axios';
 import { useRouter } from 'next/router';
 import axiosApi from '../utils/axiosApi';
-import { jwtDecode } from 'jwt-decode';
 
 export default function AddEntity() {
     const router = useRouter();
@@ -48,7 +47,6 @@ export default function AddEntity() {
         }
         try {
             const response = await axiosApi.post('/api/add_entity', formData);
-            console.log('Server Response:', response.data);
             router.push('/dashboard');
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {

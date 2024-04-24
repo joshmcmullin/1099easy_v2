@@ -27,7 +27,6 @@ export default function Dashboard() {
         const fetchEntities = async () => {
             try {
                 const response = await axiosApi.get('/dashboard');
-                console.log('Dashboard data:', response.data);
                 setEntities(response.data.data as Entity[]);
             } catch (error) {
                 console.error("Failed to fetch entities:", error);

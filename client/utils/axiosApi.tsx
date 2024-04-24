@@ -19,7 +19,6 @@ axiosApi.interceptors.request.use(function (config) {
 
 // Handle token refresh logic
 axiosApi.interceptors.response.use(response => response, async error => {
-    console.log("Line 22 of AxiosAPI triggered.");
     const originalRequest = error.config;
     // Check if it's a token expired error and this is the first retry of the request
     if (error.response.status === 401 && !originalRequest._retry) {
@@ -28,20 +27,20 @@ axiosApi.interceptors.response.use(response => response, async error => {
             const refreshResponse = await axios.post('http://localhost:8080/api/refresh_token', {}, {
                 withCredentials: true
             });
-            localStorage.setItem('accessToken', refreshResponse.data.accessToken); // Update the access token in localStorage
-            originalRequest.headers['Authorization'] = 'Bearer ' + refreshResponse.data.accessToken; // Update the token in the original request
+            // Update access token in local storage
+            localStorage.setItem('accessToken', refreshResponse.data.accessToken);
+            // update the token from the original request
+            originalRequest.headers['Authorization'] = 'Bearer ' + refreshResponse.data.accessToken;
             return axiosApi(originalRequest); // Retry the original request with the new token
-        } catch (error: unknown) {  // Explicitly declaring error as unknown
+        } catch (error: unknown) {
             if (axios.isAxiosError(error)) {
-                const axiosError = error as AxiosError; // Now TypeScript knows it's an AxiosError
+                const axiosError = error as AxiosError;
                 console.error('Axios Error during token refresh:', axiosError.message);
                 if (axiosError.response) {
-                    console.log("Line 39 triggered in AxiosAPI");
-                    console.error("Data:", axiosError.response.data); // TODO: Start debugging here, line 37 triggering.
+                    console.error("Data:", axiosError.response.data);
                     console.error("Status:", axiosError.response.status); 
                     console.error("Headers:", axiosError.response.headers); 
                 } else if (axiosError.request) {
-                    console.log("Line 42 triggered in AxiosAPI");
                     // The request was made but no response was received
                     console.error("Request made, no response received.");
                 } else {

@@ -23,20 +23,13 @@ export default function Signup() {
             alert("Passwords do not match");
             return;
         }
-        if (formData.email === '') {
-            console.error("Email cannot be left blank!");
-            alert("Email cannot be left blank!");
-            return;
-        }
-        if (formData.password === '') {
-            console.log("Password cannot be left blank!");
-            alert("Password cannot be left blank!");
+        if (!formData.email || !formData.password) {
+            console.log("Email and password fields cannot be blank!")
+            alert("Email and password fields cannot be blank!");
             return;
         }
         try {
             const response = await axiosApi.post('/api/signup', formData);
-            console.log('Server Response:', response.data);
-            console.log("SIGNUP TOKEN: ", response.data.data.accessToken);
             // Authenticate with token
             if (response.data.data.accessToken) {
                 localStorage.setItem('accessToken', response.data.data.accessToken);

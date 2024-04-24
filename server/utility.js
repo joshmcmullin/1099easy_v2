@@ -34,7 +34,7 @@ function authenticateToken(req, res, next) {
 
 // Utility function for generating access & refresh tokens for authentication
 function generateTokens(user) {
-    const accessToken = jwt.sign({ userId: user.user_id }, process.env.JWT_ACCESS_SECRET, { expiresIn: '1m' });
+    const accessToken = jwt.sign({ userId: user.user_id }, process.env.JWT_ACCESS_SECRET, { expiresIn: '15m' });
     const refreshToken = jwt.sign({ userId: user.user_id }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
     return { accessToken, refreshToken };
 }
