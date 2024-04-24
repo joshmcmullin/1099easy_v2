@@ -8,7 +8,6 @@ const axiosApi = axios.create({
 
 // Add auth token header to requests
 axiosApi.interceptors.request.use(function (config) {
-    console.log("Line 10 triggered in AxiosAPI");
     const accessToken = localStorage.getItem('accessToken');
     if (accessToken) {
         config.headers.Authorization = `Bearer ${accessToken}`;
@@ -20,6 +19,7 @@ axiosApi.interceptors.request.use(function (config) {
 
 // Handle token refresh logic
 axiosApi.interceptors.response.use(response => response, async error => {
+    console.log("Line 22 of AxiosAPI triggered.");
     const originalRequest = error.config;
     // Check if it's a token expired error and this is the first retry of the request
     if (error.response.status === 401 && !originalRequest._retry) {
@@ -36,7 +36,7 @@ axiosApi.interceptors.response.use(response => response, async error => {
                 const axiosError = error as AxiosError; // Now TypeScript knows it's an AxiosError
                 console.error('Axios Error during token refresh:', axiosError.message);
                 if (axiosError.response) {
-                    console.log("Line 37 triggered in AxiosAPI");
+                    console.log("Line 39 triggered in AxiosAPI");
                     console.error("Data:", axiosError.response.data); // TODO: Start debugging here, line 37 triggering.
                     console.error("Status:", axiosError.response.status); 
                     console.error("Headers:", axiosError.response.headers); 

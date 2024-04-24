@@ -86,6 +86,17 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// Clears refresh token cookie on logout
+app.post('/api/logout', (req, res) => {
+    res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV !== 'development',
+        sameSite: 'strict',
+        path: '/'
+    });
+    sendResponse(res, 200, 'Logout successful');
+});
+
 // TODO: Consult OWASP for security
 // TODO: Currently storing passwords in plain text, will need encryption
 app.post('/api/signup', async (req, res) => {
