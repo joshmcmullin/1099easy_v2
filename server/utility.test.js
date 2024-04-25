@@ -4,13 +4,11 @@ const { mockRequest, mockResponse } = require('./__testing__/__mocks__/express')
 jest.mock('jsonwebtoken');
 
 describe('Utility functions', () => {
-    let res;
-
-    beforeEach(() => {
-        res = mockResponse();
-    });
-
     describe('Response handlers', () => {
+        let res;
+        beforeEach(() => {
+            res = mockResponse();
+        });
         test('sendResponse sends a successful response', () => {
             sendResponse(res, 200, { foo: 'bar' });
             expect(res.status).toHaveBeenCalledWith(200);
