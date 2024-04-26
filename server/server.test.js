@@ -14,7 +14,7 @@ function generateTestToken() {
 
 function generateFalseTestToken() {
     const userPayload = {
-        user_id: process.env.USER_ID,
+        userId: process.env.USER_ID,
         email: process.env.USER_EMAIL,
         password: process.env.USER_PASS
     }
