@@ -13,9 +13,9 @@ beforeAll((done) => {
 
 function generateTestToken() {
     const userPayload = {
-        user_id: 1,
-        email: 'test@test.com',
-        password: '123'
+        user_id: process.env.USER_ID,
+        email: process.env.USER_EMAIL,
+        password: process.env.USER_PASS
     }
     return jwt.sign(userPayload, process.env.JWT_ACCESS_SECRET, { expiresIn: '1h' });
 };
@@ -38,36 +38,50 @@ describe('Server functions', () => {
         });
     });
 
-    /*
-    * Need more tests here:
-    * correct email, correct pass
-    * correct email, wrong pass
-    * wrong email, wrong pass
-    * wrong email, correct pass 
-    */
     describe('POST /api/login', () => {
-        it('should log in an existing user with correct credentials', async () => {
+        it('should log in an existing user with correct email, correct pass', async () => {
             const response = await request(app)
                 .post('/api/login')
-                .send({ email: 'test@test.com', password: '123' });
+                .send({ email: process.env.USER_EMAIL, password: process.env.USER_PASS });
             expect(response.statusCode).toBe(200);
             expect(response.body.data.accessToken).toBeDefined();
         });
 
-        it('should reject login with incorrect credentials', async () => {
+        it('should log in an existing user with correct email, other user correct pass', async () => {
             const response = await request(app)
                 .post('/api/login')
-                .send({ email: 'test@test.com', password: 'wrongpassword' });
+                .send({ email: process.env.USER_EMAIL, password: process.env.DIFF_USER_PASS });
             expect(response.statusCode).toBe(401);
+        });
+
+        it('should reject login with correct email, incorrect pass', async () => {
+            const response = await request(app)
+                .post('/api/login')
+                .send({ email: process.env.USER_EMAIL, password: process.env.F_USER_PASS });
+            expect(response.statusCode).toBe(401);
+        });
+
+        it('should reject login with incorrect email, known correct pass', async () => {
+            const response = await request(app)
+                .post('/api/login')
+                .send({ email: process.env.F_USER_EMAIL, password: process.env.USER_PASS });
+            expect(response.statusCode).toBe(404);
+        });
+
+        it('should reject login with incorrect email, incorrect pass', async () => {
+            const response = await request(app)
+                .post('/api/login')
+                .send({ email: process.env.F_USER_EMAIL, password: process.env.F_USER_PASS });
+            expect(response.statusCode).toBe(404);
         });
     });
 
     describe('POST /api/signup', () => {
-        it('should create a new user and return an access token', async () => {
+        it('should allow singup & return token with new email, new pass', async () => {
             const user = {
-                email: `test${Date.now()}@example.com`, // Dynamic email to ensure always a new user
-                password: 'newpassword123',
-                confirmPassword: 'newpassword123'
+                email: `test${Date.now()}@example.com`,     // Dynamic to always be new
+                password: `pass${Date.now()}`,              // Dynamic to always be new
+                confirmPassword: `pass${Date.now()}`        // Dynamic to always be new
             };
             const response = await request(app)
                 .post('/api/signup')
@@ -76,11 +90,36 @@ describe('Server functions', () => {
             expect(response.body.data.accessToken).toBeDefined();
         });
 
-        it('should reject signup with an existing email', async () => {
+        it('should allow singup & return token with new email, known other user correct pass', async () => {
             const user = {
-                email: 'test@test.com',
-                password: 'password123',
-                confirmPassword: 'password123'
+                email: `test${Date.now()}@example.com`,     // Dynamic to always be new
+                password: process.env.USER_PASS,
+                confirmPassword: process.env.USER_PASS
+            };
+            const response = await request(app)
+                .post('/api/signup')
+                .send(user);
+            expect(response.statusCode).toBe(201);
+            expect(response.body.data.accessToken).toBeDefined();
+        });
+
+        it('should reject signup with an existing email, existing pass', async () => {
+            const user = {
+                email: process.env.USER_EMAIL,
+                password: process.env.USER_PASS,
+                confirmPassword: process.env.USER_PASS
+            };
+            const response = await request(app)
+                .post('/api/signup')
+                .send(user);
+            expect(response.statusCode).toBe(400);
+        });
+
+        it('should reject signup with an existing email, new pass', async () => {
+            const user = {
+                email: process.env.USER_EMAIL,
+                password: `pass${Date.now()}`,          // Dynamic to always be new
+                confirmPassword: `pass${Date.now()}`    // Dynamic to always be new
             };
             const response = await request(app)
                 .post('/api/signup')
