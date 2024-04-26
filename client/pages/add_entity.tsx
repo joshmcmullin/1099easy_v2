@@ -6,34 +6,61 @@ import axiosApi from '../utils/axiosApi';
 
 export default function AddEntity() {
     const router = useRouter();
-    const [formData, setFormData] = useState({ 
+
+    const [formData, setFormData] = useState({
         name: '',
         street: '',
         city: '',
         state: '',
         zip: '',
         entity_tin: '',
+        is_individual: true,
     });
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value, type, checked } = e.target;
+        // Clear the TIN field whenever checkbox changes
+        if (name === 'is_individual') {
+            setFormData({
+                ...formData,
+                [name]: checked,
+                entity_tin: ''  
+            });
+        } else {
+            setFormData({
+                ...formData,
+                [name]: type === 'checkbox' ? checked : value
+            });
+        }
     };
-
+    
     const handleEntityTINChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { value } = e.target;
-        let digits = value.replace(/\D/g, ''); // Strip all non-digits
+        let digits = value.replace(/\D/g, '');
         let formattedInput = '';
-        // Split the digits based on their position and add dashes appropriately
-        for (let i = 0; i < digits.length; i++) {
-            if (i === 3 || i === 5) {
-                formattedInput += '-';
+
+        if (formData.is_individual) { // Format as SSN: xxx-xx-xxxx
+            for (let i = 0; i < digits.length; i++) {
+                if (i === 3 || i === 5) {
+                    formattedInput += '-';
+                }
+                formattedInput += digits[i];
             }
-            formattedInput += digits[i];
+            if (formattedInput.length > 11) {
+                formattedInput = formattedInput.slice(0, 11);
+            }
+        } else { // Format as EIN: xx-xxxxxxx
+            for (let i = 0; i < digits.length; i++) {
+                if (i === 2) {
+                    formattedInput += '-';
+                }
+                formattedInput += digits[i];
+            }
+            if (formattedInput.length > 10) {
+                formattedInput = formattedInput.slice(0, 10);
+            }
         }
-        // Limit the length of digits to match SSN format (9 digits max)
-        if (formattedInput.length > 11) {
-            formattedInput = formattedInput.slice(0, 11);
-        }
+
         setFormData({ ...formData, entity_tin: formattedInput });
     };
 
@@ -82,6 +109,10 @@ export default function AddEntity() {
                 <label>
                     ZIP:
                     <input type="text" name="zip" value={formData.zip} onChange={handleChange} className="p-1 mr-2 border-2 border-neutral-700"/>
+                </label>
+                <label>
+                    Payer is Individual:
+                    <input type="checkbox" name="is_individual" checked={formData.is_individual} onChange={handleChange} className="p-1 m-2"/>
                 </label>
                 <label>
                     TIN (SSN or EIN):

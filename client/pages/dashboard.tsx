@@ -16,6 +16,7 @@ export default function Dashboard() {
         zip: string;
         user_id: number;
         entity_tin: string;
+        is_individual: boolean;
     }
 
     const router = useRouter();
@@ -48,26 +49,26 @@ export default function Dashboard() {
             <table>
                 <thead>
                     <tr>
-                        <th className="p-1 border-2 border-neutral-700">entity_id</th>
+                        {/*<th className="p-1 border-2 border-neutral-700">entity_id</th>*/}
                         <th className="p-1 border-2 border-neutral-700">name</th>
                         <th className="p-1 border-2 border-neutral-700">street</th>
                         <th className="p-1 border-2 border-neutral-700">city</th>
                         <th className="p-1 border-2 border-neutral-700">state</th>
                         <th className="p-1 border-2 border-neutral-700">zip</th>
-                        <th className="p-1 border-2 border-neutral-700">user_id</th>
+                        {/*<th className="p-1 border-2 border-neutral-700">user_id</th>*/}
                         <th className="p-1 border-2 border-neutral-700">entity_tin</th>
                     </tr>
                 </thead>
                 <tbody>
                     {entities.map((entity, index) => (
                         <tr key={index}>
-                            <td className="p-1 border-2 border-neutral-700">{entity.entity_id}</td>
+                            {/*<td className="p-1 border-2 border-neutral-700">{entity.entity_id}</td>*/}
                             <td className="p-1 border-2 border-neutral-700">{entity.name}</td>
                             <td className="p-1 border-2 border-neutral-700">{entity.street}</td>
                             <td className="p-1 border-2 border-neutral-700">{entity.city}</td>
                             <td className="p-1 border-2 border-neutral-700">{entity.state}</td>
                             <td className="p-1 border-2 border-neutral-700">{entity.zip}</td>
-                            <td className="p-1 border-2 border-neutral-700">{entity.user_id}</td>
+                            {/*<td className="p-1 border-2 border-neutral-700">{entity.user_id}</td>*/}
                             <td className="p-1 border-2 border-neutral-700">{entity.entity_tin}</td>
                         </tr>
                     ))}

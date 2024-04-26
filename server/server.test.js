@@ -3,14 +3,6 @@ const request = require('supertest');
 const app = require('./server');
 const jwt = require('jsonwebtoken');
 
-// let server;
-
-// beforeAll((done) => {
-//     server = app.listen(4000, () => {
-//         done();
-//     });
-// });
-
 function generateTestToken() {
     const userPayload = {
         user_id: process.env.USER_ID,
@@ -141,7 +133,7 @@ describe('Server functions', () => {
         });
     });
 
-    // describe('POST /api/add_entity', () => {
+    describe('POST /api/add_entity', () => {
 
-    // });
+    });
 });

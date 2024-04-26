@@ -131,21 +131,21 @@ app.post('/api/signup', async (req, res) => {
 app.post('/api/add_entity', authenticateToken, async (req, res) => {
     try {
         // Logic check here to make sure entity is good to be added
-        const { name, street, city, state, zip, entity_tin } = req.body;
+        const { name, street, city, state, zip, entity_tin, is_individual } = req.body;
         // Check for required fields
         if (!name || !street || !city || !state || !zip || !entity_tin) {
             console.log("name, street, city, state, zip, or entity_tin is missing");
             return sendError(res, 400, "All fields must be filled");
         }
-        // Check if EIN or SSN is already in an entity
+        // Check if TIN is already in an entity
         const userId = req.user.userId;
         const result = await pool.query('SELECT entity_tin FROM entity WHERE user_id = $1 AND entity_tin = $2', [userId, entity_tin]);
         if (result.rows.length > 0) {
             return sendError(res, 400, "An entity with this TIN already exists.");
         }
         // Insert entity
-        const insertQuery = 'INSERT INTO entity (name, street, city, state, zip, entity_tin, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7)';
-        await pool.query(insertQuery, [name, street, city, state, zip, entity_tin, userId]);
+        const insertQuery = 'INSERT INTO entity (name, street, city, state, zip, entity_tin, is_individual, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)';
+        await pool.query(insertQuery, [name, street, city, state, zip, entity_tin, is_individual, userId]);
         res.status(201).json({ message: "Entity added successfully" });
     } catch (err) {
         console.log(err)
