@@ -5,11 +5,20 @@ const jwt = require('jsonwebtoken');
 
 function generateTestToken() {
     const userPayload = {
-        user_id: process.env.USER_ID,
+        userId: process.env.USER_ID,
         email: process.env.USER_EMAIL,
         password: process.env.USER_PASS
     }
     return jwt.sign(userPayload, process.env.JWT_ACCESS_SECRET, { expiresIn: '1h' });
+};
+
+function generateFalseTestToken() {
+    const userPayload = {
+        user_id: process.env.USER_ID,
+        email: process.env.USER_EMAIL,
+        password: process.env.USER_PASS
+    }
+    return jwt.sign(userPayload, 'wrongkey', { expiresIn: '1h' });
 };
 
 describe('Server functions', () => {
@@ -133,7 +142,211 @@ describe('Server functions', () => {
         });
     });
 
+    
     describe('POST /api/add_entity', () => {
+        // Constants to help standardize and prevent typos
+        const name = 'Test name'
+        const street = 'Test street'
+        const city = 'Test city'
+        const state = 'TS'
+        const stateShort = 'T'
+        const stateLong = 'TSL'
+        const stateNum = 'T1'
+        const zip = 11111
+        const zipShort = 1111
+        const zipLong = 111111
+        const ssn = '111-11-1111'
+        const ssnShort = '111-11-111'
+        const ein = '11-1111111'
+        const einShort = '11-111111'
+
+        it('should reject new entity with missing name', async () => {
+            const data = {
+                name: '',
+                street: street,
+                city: city,
+                state: state,
+                zip: zip,
+                entity_tin: ssn,
+                is_individual: true
+            };
+            const testToken = generateTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('All fields must be filled');
+        });
+
+        it('should reject new entity with missing street', async () => {
+            const data = {
+                name: name,
+                street: '',
+                city: city,
+                state: state,
+                zip: zip,
+                entity_tin: ssn,
+                is_individual: true
+            };
+            const testToken = generateTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('All fields must be filled');
+        });
+
+        it('should reject new entity with missing city', async () => {
+            const data = {
+                name: name,
+                street: street,
+                city: '',
+                state: state,
+                zip: zip,
+                entity_tin: ssn,
+                is_individual: true
+            };
+            const testToken = generateTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('All fields must be filled');
+        });
+
+        it('should reject new entity with missing state', async () => {
+            const data = {
+                name: name,
+                street: street,
+                city: city,
+                state: '',
+                zip: zip,
+                entity_tin: ssn,
+                is_individual: true
+            };
+            const testToken = generateTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('All fields must be filled');
+        });
+
+        it('should reject new entity with missing zip', async () => {
+            const data = {
+                name: name,
+                street: street,
+                city: city,
+                state: state,
+                zip: '',
+                entity_tin: ssn,
+                is_individual: true
+            };
+            const testToken = generateTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('All fields must be filled');
+        });
+
+        it('should reject new entity with missing entity_tin', async () => {
+            const data = {
+                name: name,
+                street: street,
+                city: city,
+                state: state,
+                zip: zip,
+                entity_tin: '',
+                is_individual: true
+            };
+            const testToken = generateTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('All fields must be filled');
+        });
+
+        it('should reject new entity with no authentication', async () => {
+            const data = {
+                name: name,
+                street: street,
+                city: city,
+                state: state,
+                zip: zip,
+                entity_tin: ssn,
+                is_individual: true
+            };
+            const response = await request(app)
+                .post('/api/add_entity')
+                .send(data);
+            expect(response.statusCode).toBe(401);
+            expect(response.body.message).toBe('No token provided');
+        });
+
+        it('should reject new entity with incorrect authentication', async () => {
+            const data = {
+                name: name,
+                street: street,
+                city: city,
+                state: state,
+                zip: zip,
+                entity_tin: ssn,
+                is_individual: true
+            };
+            const falseTestToken = generateFalseTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${falseTestToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(401);
+            expect(response.body.message).toBe('Invalid token');
+        });
+
+        it('should reject new entity when trying to use a duplicate SSN', async () => {
+            const data = {
+                name: name,
+                street: street,
+                city: city,
+                state: state,
+                zip: zip,
+                entity_tin: process.env.ENTITY_SSN,
+                is_individual: true
+            };
+            const testToken = generateTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('An entity with this TIN already exists.');
+        });
+
+        it('should reject new entity when trying to use a duplicate EIN', async () => {
+            const data = {
+                name: name,
+                street: street,
+                city: city,
+                state: state,
+                zip: zip,
+                entity_tin: process.env.ENTITY_EIN,
+                is_individual: true
+            };
+            const testToken = generateTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('An entity with this TIN already exists.');
+        });
 
     });
 });

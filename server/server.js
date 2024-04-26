@@ -174,8 +174,15 @@ app.post('/api/refresh_token', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server started on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+    const server = app.listen(PORT, () => `Server running on port ${PORT}`);
+    module.exports = server;
+} else {
+    module.exports = app;
+}
 
-module.exports = app;
+// app.listen(PORT, () => {
+//     console.log(`Server started on port ${PORT}`);
+// });
+
+// module.exports = app;
