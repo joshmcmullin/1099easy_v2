@@ -1,6 +1,6 @@
 const { sendResponse, sendError, authenticateToken, generateTokens } = require('./utility');
 const jwt = require('jsonwebtoken');
-const { mockRequest, mockResponse } = require('./__testing__/__mocks__/express');
+const { mockRequest, mockResponse } = require('./__testing__/__mocks__/mockResAndReq');
 jest.mock('jsonwebtoken');
 
 describe('Utility functions', () => {

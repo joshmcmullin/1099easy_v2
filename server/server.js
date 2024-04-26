@@ -1,5 +1,5 @@
 require('dotenv').config({ path: '.env.local' });
-const express = require("express");
+const express = require('express');
 const app = express();
 const cors = require("cors");
 const bodyParser = require('body-parser');
@@ -161,7 +161,6 @@ app.post('/api/refresh_token', async (req, res) => {
     try {
         const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
         const newAccessToken = jwt.sign({ userId: payload.userId }, process.env.JWT_ACCESS_SECRET, { expiresIn: '15m'});
-        // Optionally create a new refresh token
         const newRefreshToken = jwt.sign({ userId: payload.userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d'});
         res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
@@ -178,3 +177,5 @@ app.post('/api/refresh_token', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
 });
+
+module.exports = app;
