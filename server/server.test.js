@@ -3,13 +3,13 @@ const request = require('supertest');
 const app = require('./server');
 const jwt = require('jsonwebtoken');
 
-let server;
+// let server;
 
-beforeAll((done) => {
-    server = app.listen(4000, () => {
-        done();
-    });
-});
+// beforeAll((done) => {
+//     server = app.listen(4000, () => {
+//         done();
+//     });
+// });
 
 function generateTestToken() {
     const userPayload = {
@@ -24,13 +24,13 @@ describe('Server functions', () => {
 
     describe('GET /dashboard', () => {
         it('should require authentication', async () => {
-            const response = await request(server).get('/dashboard');
+            const response = await request(app).get('/dashboard');
             expect(response.statusCode).toBe(401);
         });
 
         it('should return entities for the authenticated user', async () => {
             const testToken = generateTestToken();
-            const response = await request(server)
+            const response = await request(app)
                 .get('/dashboard')
                 .set('Authorization', `Bearer ${testToken}`);
             expect(response.statusCode).toBe(200);
@@ -76,6 +76,19 @@ describe('Server functions', () => {
         });
     });
 
+    describe('POST /api/logout', () => {
+        it('should clear the refreshToken cookie', async () => {
+            const secureFlag = process.env.NODE_ENV !== 'development' ? ' Secure;' : '';
+            const expectedSetCookie = `refreshToken=; Path=/; Expires=.*GMT; HttpOnly;${secureFlag} SameSite=Strict`;
+            const response = await request(app)
+                .post('/api/logout')
+                .expect(200)
+                .expect('Set-Cookie', new RegExp(expectedSetCookie))
+                .expect('Content-Type', /json/);
+            expect(response.body.data).toEqual('Logout successful');
+        });
+    });
+    
     describe('POST /api/signup', () => {
         it('should allow singup & return token with new email, new pass', async () => {
             const user = {
@@ -127,4 +140,8 @@ describe('Server functions', () => {
             expect(response.statusCode).toBe(400);
         });
     });
+
+    // describe('POST /api/add_entity', () => {
+
+    // });
 });
