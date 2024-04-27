@@ -334,6 +334,25 @@ describe('Server functions', () => {
             expect(response.body.message).toBe('Invalid token');
         });
 
+        it('should reject new entity with the same name', async () => {
+            const data = {
+                name: process.env.ENTITY_NAME,
+                street: street,
+                city: city,
+                state: state,
+                zip: zip,
+                entity_tin: ssn,
+                is_individual: true
+            };
+            const testToken = generateAccessTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('An entity with this name already exists.');
+        });
+
         it('should reject new entity when trying to use a duplicate SSN', async () => {
             const data = {
                 name: name,
@@ -361,7 +380,7 @@ describe('Server functions', () => {
                 state: state,
                 zip: zip,
                 entity_tin: process.env.ENTITY_EIN,
-                is_individual: true
+                is_individual: false
             };
             const testToken = generateAccessTestToken();
             const response = await request(app)
@@ -370,6 +389,44 @@ describe('Server functions', () => {
                 .send(data);
             expect(response.statusCode).toBe(400);
             expect(response.body.message).toBe('An entity with this TIN already exists.');
+        });
+
+        it('should reject new entity with a duplicate name & SSN', async () => {
+            const data = {
+                name: process.env.ENTITY_NAME,
+                street: street,
+                city: city,
+                state: state,
+                zip: zip,
+                entity_tin: process.env.ENTITY_SSN,
+                is_individual: true
+            };
+            const testToken = generateAccessTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('An entity with this TIN and name already exists.');
+        });
+
+        it('should reject new entity with a duplicate name & EIN', async () => {
+            const data = {
+                name: process.env.ENTITY_NAME,
+                street: street,
+                city: city,
+                state: state,
+                zip: zip,
+                entity_tin: process.env.ENTITY_EIN,
+                is_individual: false
+            };
+            const testToken = generateAccessTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('An entity with this TIN and name already exists.');
         });
 
         it('should reject new entity when EIN is less than 10 characters', async () => {

@@ -46,30 +46,42 @@ export default function Dashboard() {
         <div>
             <h1>Welcome to your dashboard.</h1>
             <h2>Here is a list of all your entities:</h2>
-            <table>
+            {/* <table>
                 <thead>
                     <tr>
-                        {/*<th className="p-1 border-2 border-neutral-700">entity_id</th>*/}
+                        <th className="p-1 border-2 border-neutral-700">entity_id</th>
                         <th className="p-1 border-2 border-neutral-700">name</th>
                         <th className="p-1 border-2 border-neutral-700">street</th>
                         <th className="p-1 border-2 border-neutral-700">city</th>
                         <th className="p-1 border-2 border-neutral-700">state</th>
                         <th className="p-1 border-2 border-neutral-700">zip</th>
-                        {/*<th className="p-1 border-2 border-neutral-700">user_id</th>*/}
+                        <th className="p-1 border-2 border-neutral-700">user_id</th>
                         <th className="p-1 border-2 border-neutral-700">entity_tin</th>
                     </tr>
                 </thead>
                 <tbody>
                     {entities.map((entity, index) => (
                         <tr key={index}>
-                            {/*<td className="p-1 border-2 border-neutral-700">{entity.entity_id}</td>*/}
+                            <td className="p-1 border-2 border-neutral-700">{entity.entity_id}</td>
                             <td className="p-1 border-2 border-neutral-700">{entity.name}</td>
                             <td className="p-1 border-2 border-neutral-700">{entity.street}</td>
                             <td className="p-1 border-2 border-neutral-700">{entity.city}</td>
                             <td className="p-1 border-2 border-neutral-700">{entity.state}</td>
                             <td className="p-1 border-2 border-neutral-700">{entity.zip}</td>
-                            {/*<td className="p-1 border-2 border-neutral-700">{entity.user_id}</td>*/}
+                            <td className="p-1 border-2 border-neutral-700">{entity.user_id}</td>
                             <td className="p-1 border-2 border-neutral-700">{entity.entity_tin}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table> */}
+            <table>
+                <tbody>
+                    {entities.map((entity, index) => (
+                        <tr key={index}>
+                            <td className="p-1 border-2 border-neutral-700">{entity.name}</td>
+                            <td className="p-1 border-2 border-neutral-700">File 1099s</td>
+                            <td className="p-1 border-2 border-neutral-700">View 1099s</td>
+                            <td className="p-1 border-2 border-neutral-700">Update Info</td>
                         </tr>
                     ))}
                 </tbody>

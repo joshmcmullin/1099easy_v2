@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "cross-env NODE_ENV=test jest --silent --verbose --forceExit",
+    "test-loud": "cross-env NODE_ENV=test jest --verbose --forceExit",
     "start": "node server",
     "dev": "nodemon server",
     "clear-jest-cache": "jest --clearCache"

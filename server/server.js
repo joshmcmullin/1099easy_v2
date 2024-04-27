@@ -128,11 +128,20 @@ app.post('/api/add_entity', authenticateToken, async (req, res) => {
             console.log("name, street, city, state, zip, or entity_tin is missing");
             return sendError(res, 400, "All fields must be filled");
         }
-        // Check if TIN is already in an entity
+        // Check if TIN or name is already in an entity
         const userId = req.user.userId;
-        const result = await pool.query('SELECT entity_tin FROM entity WHERE user_id = $1 AND entity_tin = $2', [userId, entity_tin]);
+        const result = await pool.query('SELECT entity_tin, name FROM entity WHERE user_id = $1 AND (entity_tin = $2 OR name = $3)', [userId, entity_tin, name]);
         if (result.rows.length > 0) {
-            return sendError(res, 400, "An entity with this TIN already exists.");
+            // Check which exists already
+            const existsTin = result.rows.some(row => row.entity_tin === entity_tin);
+            const existsName = result.rows.some(row => row.name === name);
+            if (existsTin && existsName) {
+                return sendError(res, 400, "An entity with this TIN and name already exists.");
+            } else if (existsTin) {
+                return sendError(res, 400, "An entity with this TIN already exists.");
+            } else {
+                return sendError(res, 400, "An entity with this name already exists.");
+            }
         }
         // Check if TIN is proper length. Format forced through front-end
         if (is_individual) {
