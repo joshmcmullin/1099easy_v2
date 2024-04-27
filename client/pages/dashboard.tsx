@@ -79,8 +79,9 @@ export default function Dashboard() {
                     {entities.map((entity, index) => (
                         <tr key={index}>
                             <td className="p-1 border-2 border-neutral-700">{entity.name}</td>
-                            <td className="p-1 border-2 border-neutral-700">File 1099s</td>
-                            <td className="p-1 border-2 border-neutral-700">View 1099s</td>
+                            <td className="p-1 border-2 border-neutral-700">
+                                <Link href={`/view-forms/${entity.entity_id}`}>View Forms</Link>
+                            </td>
                             <td className="p-1 border-2 border-neutral-700">Update Info</td>
                         </tr>
                     ))}

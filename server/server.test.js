@@ -50,6 +50,16 @@ describe('Server functions', () => {
         it('should require authentication', async () => {
             const response = await request(app).get('/dashboard');
             expect(response.statusCode).toBe(401);
+            expect(response.body.message).toEqual('No token provided');
+        });
+
+        it('should reject request on false authentication', async () => {
+            const falseTestToken = generateFalseAccessTestToken();
+            const response = await request(app)
+                .get('/dashboard')
+                .set('Authorization', `Bearer ${falseTestToken}`);
+            expect(response.statusCode).toBe(401);
+            expect(response.body.message).toEqual('Invalid token');
         });
 
         it('should return entities for the authenticated user', async () => {
@@ -614,6 +624,73 @@ describe('Server functions', () => {
                     expect.stringContaining('refreshToken')
                 ])
             );
+        });
+    });
+
+    describe('GET /api/entities/:entityId', () => {
+        it('should require authentication', async () => {
+            const response = await request(app)
+                .get('/api/entities/:entityId');
+            expect(response.statusCode).toBe(401);
+            expect(response.body.message).toEqual('No token provided');
+        });
+
+        it('should reject request on false authentication', async () => {
+            const falseTestToken = generateFalseAccessTestToken();
+            const response = await request(app)
+                .get('/api/entities/:entityId')
+                .set('Authorization', `Bearer ${falseTestToken}`);
+            expect(response.statusCode).toBe(401);
+            expect(response.body.message).toEqual('Invalid token');
+        });
+
+        it('should accept request when entity and user exist', async () => {
+            const testToken = generateAccessTestToken();
+            const entityId = process.env.ENTITY_ID;
+            const response = await request(app)
+                .get(`/api/entities/${entityId}`)
+                .set('Authorization', `Bearer ${testToken}`);
+            expect(response.statusCode).toBe(200);
+            console.log(response);
+            expect(response.body.data).toBeInstanceOf(Object);
+        });
+    });
+
+    describe('GET /api/forms/:entityId', () => {
+        it('should require authentication', async () => {
+            const response = await request(app)
+                .get('/api/forms/:entityId');
+            expect(response.statusCode).toBe(401);
+            expect(response.body.message).toEqual('No token provided');
+        });
+
+        it('should reject request on false authentication', async () => {
+            const falseTestToken = generateFalseAccessTestToken();
+            const response = await request(app)
+                .get('/api/forms/:entityId')
+                .set('Authorization', `Bearer ${falseTestToken}`);
+            expect(response.statusCode).toBe(401);
+            expect(response.body.message).toEqual('Invalid token');
+        });
+
+        it('should accept request when entity and user exist with forms', async () => {
+            const testToken = generateAccessTestToken();
+            const entityId = process.env.ENTITY_ID;
+            const response = await request(app)
+                .get(`/api/forms/${entityId}`)
+                .set('Authorization', `Bearer ${testToken}`);
+            expect(response.statusCode).toBe(200);
+            expect(response.body.data).toBeInstanceOf(Array);
+        });
+
+        it('should accept request when entity and user exist with no forms', async () => {
+            const testToken = generateAccessTestToken();
+            const entityId = process.env.ENTITY_ID;
+            const response = await request(app)
+                .get(`/api/forms/${entityId}`)
+                .set('Authorization', `Bearer ${testToken}`);
+            expect(response.statusCode).toBe(200);
+            expect(response.body.data).toBeInstanceOf(Array);
         });
     });
 });

@@ -172,6 +172,40 @@ app.post('/api/add_entity', authenticateToken, async (req, res) => {
     }
 });
 
+app.get('/api/entities/:entityId', authenticateToken, async (req, res) => {
+    const { entityId } = req.params;
+    const userId = req.user.userId;
+    try {
+        const query = 'SELECT * FROM entity WHERE entity_id = $1 AND user_id = $2';
+        const result = await pool.query(query, [entityId, userId]);
+        if (result.rows.length > 0) {
+            sendResponse(res, 200, result.rows[0]);
+        } else { // This should NEVER trigger or an entity that doesn't exist is on the dashboard!
+            return sendError(res, 404, 'Entity not found.'); 
+        }
+    } catch (err) {
+        console.error('Error fetching entity:', err);
+        return sendError(res, 500, 'Server error occurred.');
+    }
+});
+
+app.get('/api/forms/:entityId', authenticateToken, async (req, res) => {
+    const { entityId } = req.params;
+    const userId = req.user.userId;
+    try {
+        const query = 'SELECT * FROM form WHERE payer_id = $1 AND user_id = $2';
+        const result = await pool.query(query, [entityId, userId]);
+        if (result.rows.length > 0) {
+            sendResponse(res, 200, result.rows);
+        } else {
+            sendResponse(res, 200, []);
+        }
+    } catch (err) {
+        console.error('Error fetching forms:', err);
+        return sendError(res, 500, 'Server error occured.');
+    }
+});
+
 app.post('/api/refresh_token', async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
