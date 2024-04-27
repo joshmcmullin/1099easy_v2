@@ -2,6 +2,15 @@ require('dotenv').config({ path: '.env.local' });
 const request = require('supertest');
 const app = require('./server');
 const jwt = require('jsonwebtoken');
+const pool = require('./databaseConfig');
+
+beforeEach(async () => {
+    await pool.query('BEGIN');
+});
+
+afterEach(async () => {
+    await pool.query('ROLLBACK');
+});
 
 function generateTestToken() {
     const userPayload = {
@@ -346,6 +355,44 @@ describe('Server functions', () => {
                 .send(data);
             expect(response.statusCode).toBe(400);
             expect(response.body.message).toBe('An entity with this TIN already exists.');
+        });
+
+        it('should reject new entity when EIN is less than 10 characters', async () => {
+            const data = {
+                name: name,
+                street: street,
+                city: city,
+                state: state,
+                zip: zip,
+                entity_tin: einShort,
+                is_individual: true
+            };
+            const testToken = generateTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('An EIN must be 9 digits and formatted (xx-xxxxxxx).');
+        });
+
+        it('should reject new entity when SSN is less than 11 characters', async () => {
+            const data = {
+                name: name,
+                street: street,
+                city: city,
+                state: state,
+                zip: zip,
+                entity_tin: ssnShort,
+                is_individual: true
+            };
+            const testToken = generateTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('An SSN must be 9 digits and formatted (xxx-xx-xxxx).');
         });
 
     });

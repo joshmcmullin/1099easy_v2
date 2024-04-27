@@ -3,21 +3,12 @@ const express = require('express');
 const app = express();
 const cors = require("cors");
 const bodyParser = require('body-parser');
-const { Pool } = require('pg');
+const pool = require('./databaseConfig');
 const { sendResponse, sendError, authenticateToken, generateTokens } = require('./utility');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const PORT = 8080;
-
-// Configure database connection
-const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_DATABASE,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT
-});
 
 app.use(bodyParser.json());
 app.use(cors({
@@ -143,6 +134,7 @@ app.post('/api/add_entity', authenticateToken, async (req, res) => {
         if (result.rows.length > 0) {
             return sendError(res, 400, "An entity with this TIN already exists.");
         }
+        // Check if TIN is proper length
         // Insert entity
         const insertQuery = 'INSERT INTO entity (name, street, city, state, zip, entity_tin, is_individual, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)';
         await pool.query(insertQuery, [name, street, city, state, zip, entity_tin, is_individual, userId]);
