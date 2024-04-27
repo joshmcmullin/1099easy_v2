@@ -164,6 +164,7 @@ describe('Server functions', () => {
         const zip = 11111
         const zipShort = 1111
         const zipLong = 111111
+        const zipChar = '11a11'
         const ssn = '111-11-1111'
         const ssnShort = '111-11-111'
         const ein = '11-1111111'
@@ -365,7 +366,7 @@ describe('Server functions', () => {
                 state: state,
                 zip: zip,
                 entity_tin: einShort,
-                is_individual: true
+                is_individual: false
             };
             const testToken = generateTestToken();
             const response = await request(app)
@@ -373,7 +374,7 @@ describe('Server functions', () => {
                 .set('Authorization', `Bearer ${testToken}`)
                 .send(data);
             expect(response.statusCode).toBe(400);
-            expect(response.body.message).toBe('An EIN must be 9 digits and formatted (xx-xxxxxxx).');
+            expect(response.body.message).toBe('An EIN must be 9 digits and formatted xx-xxxxxxx');
         });
 
         it('should reject new entity when SSN is less than 11 characters', async () => {
@@ -392,7 +393,121 @@ describe('Server functions', () => {
                 .set('Authorization', `Bearer ${testToken}`)
                 .send(data);
             expect(response.statusCode).toBe(400);
-            expect(response.body.message).toBe('An SSN must be 9 digits and formatted (xxx-xx-xxxx).');
+            expect(response.body.message).toBe('An SSN must be 9 digits and formatted xxx-xx-xxxx');
+        });
+
+        it('should reject new entity when state is less than 2 characters', async () => {
+            const data = {
+                name: name,
+                street: street,
+                city: city,
+                state: stateShort,
+                zip: zip,
+                entity_tin: ssn,
+                is_individual: true
+            };
+            const testToken = generateTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('The State abbreviation should be a 2-letter code (Ex: ID, UT, AZ)');
+        });
+
+        it('should reject new entity when state is more than 2 characters', async () => {
+            const data = {
+                name: name,
+                street: street,
+                city: city,
+                state: stateLong,
+                zip: zip,
+                entity_tin: ssn,
+                is_individual: true
+            };
+            const testToken = generateTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('The State abbreviation should be a 2-letter code (Ex: ID, UT, AZ)');
+        });
+
+        it('should reject new entity when state has digits instead of characters', async () => {
+            const data = {
+                name: name,
+                street: street,
+                city: city,
+                state: stateNum,
+                zip: zip,
+                entity_tin: ssn,
+                is_individual: true
+            };
+            const testToken = generateTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('The State abbreviation should be a 2-letter code (Ex: ID, UT, AZ)');
+        });
+
+        it('should reject new entity when zip is longer than 5 numbers', async () => {
+            const data = {
+                name: name,
+                street: street,
+                city: city,
+                state: state,
+                zip: zipLong,
+                entity_tin: ssn,
+                is_individual: true
+            };
+            const testToken = generateTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('The ZIP should be a 5-digit number');
+        });
+
+        it('should reject new entity when zip is shorter than 5 numbers', async () => {
+            const data = {
+                name: name,
+                street: street,
+                city: city,
+                state: state,
+                zip: zipShort,
+                entity_tin: ssn,
+                is_individual: true
+            };
+            const testToken = generateTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('The ZIP should be a 5-digit number');
+        });
+
+        it('should reject new entity when zip has characters other than digits', async () => {
+            const data = {
+                name: name,
+                street: street,
+                city: city,
+                state: state,
+                zip: zipChar,
+                entity_tin: ssn,
+                is_individual: true
+            };
+            const testToken = generateTestToken();
+            const response = await request(app)
+                .post('/api/add_entity')
+                .set('Authorization', `Bearer ${testToken}`)
+                .send(data);
+            expect(response.statusCode).toBe(400);
+            expect(response.body.message).toBe('The ZIP should be a 5-digit number');
         });
 
     });

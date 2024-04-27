@@ -135,6 +135,24 @@ app.post('/api/add_entity', authenticateToken, async (req, res) => {
             return sendError(res, 400, "An entity with this TIN already exists.");
         }
         // Check if TIN is proper length
+        if (is_individual) {
+            if (entity_tin.length !== 11) {
+                return sendError(res, 400, 'An SSN must be 9 digits and formatted xxx-xx-xxxx');
+            }
+        } else {
+            if (entity_tin.length !== 10) {
+                return sendError(res, 400, 'An EIN must be 9 digits and formatted xx-xxxxxxx');
+            }
+        }
+        // Check if State is proper length & format
+        if (!/^[A-Za-z]{2}$/.test(state)) {
+            return sendError(res, 400, 'The State abbreviation should be a 2-letter code (Ex: ID, UT, AZ)');
+        }
+        // Check if ZIP is proper length & format
+        if (!/^\d{5}$/.test(zip)) {
+            return sendError(res, 400, 'The ZIP should be a 5-digit number');
+        }
+        
         // Insert entity
         const insertQuery = 'INSERT INTO entity (name, street, city, state, zip, entity_tin, is_individual, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)';
         await pool.query(insertQuery, [name, street, city, state, zip, entity_tin, is_individual, userId]);
