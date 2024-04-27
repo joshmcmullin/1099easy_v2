@@ -629,16 +629,18 @@ describe('Server functions', () => {
 
     describe('GET /api/entities/:entityId', () => {
         it('should require authentication', async () => {
+            const entityId = process.env.ENTITY_ID;
             const response = await request(app)
-                .get('/api/entities/:entityId');
+                .get(`/api/entities/${entityId}`);
             expect(response.statusCode).toBe(401);
             expect(response.body.message).toEqual('No token provided');
         });
 
         it('should reject request on false authentication', async () => {
             const falseTestToken = generateFalseAccessTestToken();
+            const entityId = process.env.ENTITY_ID;
             const response = await request(app)
-                .get('/api/entities/:entityId')
+                .get(`/api/entities/${entityId}`)
                 .set('Authorization', `Bearer ${falseTestToken}`);
             expect(response.statusCode).toBe(401);
             expect(response.body.message).toEqual('Invalid token');
@@ -658,16 +660,18 @@ describe('Server functions', () => {
 
     describe('GET /api/forms/:entityId', () => {
         it('should require authentication', async () => {
+            const entityId = process.env.ENTITY_ID;
             const response = await request(app)
-                .get('/api/forms/:entityId');
+                .get(`/api/forms/${entityId}`);
             expect(response.statusCode).toBe(401);
             expect(response.body.message).toEqual('No token provided');
         });
 
         it('should reject request on false authentication', async () => {
             const falseTestToken = generateFalseAccessTestToken();
+            const entityId = process.env.ENTITY_ID;
             const response = await request(app)
-                .get('/api/forms/:entityId')
+                .get(`/api/forms/${entityId}`)
                 .set('Authorization', `Bearer ${falseTestToken}`);
             expect(response.statusCode).toBe(401);
             expect(response.body.message).toEqual('Invalid token');

@@ -172,6 +172,27 @@ app.post('/api/add_entity', authenticateToken, async (req, res) => {
     }
 });
 
+app.post('/api/refresh_token', async (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+        return sendError(res, 401, "Refresh Token is required")
+    }
+    try {
+        const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+        const newAccessToken = jwt.sign({ userId: payload.userId }, process.env.JWT_ACCESS_SECRET, { expiresIn: '15m'});
+        const newRefreshToken = jwt.sign({ userId: payload.userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d'});
+        res.cookie('refreshToken', newRefreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV !== 'development',
+            sameSite: 'strict',
+            path: '/'
+        });
+        return res.json({ accessToken: newAccessToken });
+    } catch (err) {
+        return res.status(403).json({ message: "Invalid Refresh Token!"});
+    }
+});
+
 app.get('/api/entities/:entityId', authenticateToken, async (req, res) => {
     const { entityId } = req.params;
     const userId = req.user.userId;
@@ -203,27 +224,6 @@ app.get('/api/forms/:entityId', authenticateToken, async (req, res) => {
     } catch (err) {
         console.error('Error fetching forms:', err);
         return sendError(res, 500, 'Server error occured.');
-    }
-});
-
-app.post('/api/refresh_token', async (req, res) => {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) {
-        return sendError(res, 401, "Refresh Token is required")
-    }
-    try {
-        const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-        const newAccessToken = jwt.sign({ userId: payload.userId }, process.env.JWT_ACCESS_SECRET, { expiresIn: '15m'});
-        const newRefreshToken = jwt.sign({ userId: payload.userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d'});
-        res.cookie('refreshToken', newRefreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV !== 'development',
-            sameSite: 'strict',
-            path: '/'
-        });
-        return res.json({ accessToken: newAccessToken });
-    } catch (err) {
-        return res.status(403).json({ message: "Invalid Refresh Token!"});
     }
 });
 
