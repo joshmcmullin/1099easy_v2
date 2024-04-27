@@ -134,7 +134,7 @@ app.post('/api/add_entity', authenticateToken, async (req, res) => {
         if (result.rows.length > 0) {
             return sendError(res, 400, "An entity with this TIN already exists.");
         }
-        // Check if TIN is proper length
+        // Check if TIN is proper length. Format forced through front-end
         if (is_individual) {
             if (entity_tin.length !== 11) {
                 return sendError(res, 400, 'An SSN must be 9 digits and formatted xxx-xx-xxxx');
@@ -190,9 +190,3 @@ if (process.env.NODE_ENV !== 'test') {
 } else {
     module.exports = app;
 }
-
-// app.listen(PORT, () => {
-//     console.log(`Server started on port ${PORT}`);
-// });
-
-// module.exports = app;

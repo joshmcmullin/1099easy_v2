@@ -12,7 +12,7 @@ afterEach(async () => {
     await pool.query('ROLLBACK');
 });
 
-function generateTestToken() {
+function generateAccessTestToken() {
     const userPayload = {
         userId: process.env.USER_ID,
         email: process.env.USER_EMAIL,
@@ -21,13 +21,27 @@ function generateTestToken() {
     return jwt.sign(userPayload, process.env.JWT_ACCESS_SECRET, { expiresIn: '1h' });
 };
 
-function generateFalseTestToken() {
+function generateFalseAccessTestToken() {
     const userPayload = {
         userId: process.env.USER_ID,
         email: process.env.USER_EMAIL,
         password: process.env.USER_PASS
     }
     return jwt.sign(userPayload, 'wrongkey', { expiresIn: '1h' });
+};
+
+function generateRefreshTestToken() {
+    const userPayload = {
+        userId: process.env.USER_ID
+    };
+    return jwt.sign(userPayload, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+};
+
+function generateFalseRefreshTestToken() {
+    const userPayload = {
+        userId: process.env.USER_ID
+    };
+    return jwt.sign(userPayload, 'wwrongkey', { expiresIn: '7d' });
 };
 
 describe('Server functions', () => {
@@ -39,7 +53,7 @@ describe('Server functions', () => {
         });
 
         it('should return entities for the authenticated user', async () => {
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .get('/dashboard')
                 .set('Authorization', `Bearer ${testToken}`);
@@ -180,7 +194,7 @@ describe('Server functions', () => {
                 entity_tin: ssn,
                 is_individual: true
             };
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${testToken}`)
@@ -199,7 +213,7 @@ describe('Server functions', () => {
                 entity_tin: ssn,
                 is_individual: true
             };
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${testToken}`)
@@ -218,7 +232,7 @@ describe('Server functions', () => {
                 entity_tin: ssn,
                 is_individual: true
             };
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${testToken}`)
@@ -237,7 +251,7 @@ describe('Server functions', () => {
                 entity_tin: ssn,
                 is_individual: true
             };
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${testToken}`)
@@ -256,7 +270,7 @@ describe('Server functions', () => {
                 entity_tin: ssn,
                 is_individual: true
             };
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${testToken}`)
@@ -275,7 +289,7 @@ describe('Server functions', () => {
                 entity_tin: '',
                 is_individual: true
             };
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${testToken}`)
@@ -311,7 +325,7 @@ describe('Server functions', () => {
                 entity_tin: ssn,
                 is_individual: true
             };
-            const falseTestToken = generateFalseTestToken();
+            const falseTestToken = generateFalseAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${falseTestToken}`)
@@ -330,7 +344,7 @@ describe('Server functions', () => {
                 entity_tin: process.env.ENTITY_SSN,
                 is_individual: true
             };
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${testToken}`)
@@ -349,7 +363,7 @@ describe('Server functions', () => {
                 entity_tin: process.env.ENTITY_EIN,
                 is_individual: true
             };
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${testToken}`)
@@ -368,7 +382,7 @@ describe('Server functions', () => {
                 entity_tin: einShort,
                 is_individual: false
             };
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${testToken}`)
@@ -387,7 +401,7 @@ describe('Server functions', () => {
                 entity_tin: ssnShort,
                 is_individual: true
             };
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${testToken}`)
@@ -406,7 +420,7 @@ describe('Server functions', () => {
                 entity_tin: ssn,
                 is_individual: true
             };
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${testToken}`)
@@ -425,7 +439,7 @@ describe('Server functions', () => {
                 entity_tin: ssn,
                 is_individual: true
             };
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${testToken}`)
@@ -444,7 +458,7 @@ describe('Server functions', () => {
                 entity_tin: ssn,
                 is_individual: true
             };
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${testToken}`)
@@ -463,7 +477,7 @@ describe('Server functions', () => {
                 entity_tin: ssn,
                 is_individual: true
             };
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${testToken}`)
@@ -482,7 +496,7 @@ describe('Server functions', () => {
                 entity_tin: ssn,
                 is_individual: true
             };
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${testToken}`)
@@ -501,7 +515,7 @@ describe('Server functions', () => {
                 entity_tin: ssn,
                 is_individual: true
             };
-            const testToken = generateTestToken();
+            const testToken = generateAccessTestToken();
             const response = await request(app)
                 .post('/api/add_entity')
                 .set('Authorization', `Bearer ${testToken}`)
@@ -509,6 +523,40 @@ describe('Server functions', () => {
             expect(response.statusCode).toBe(400);
             expect(response.body.message).toBe('The ZIP should be a 5-digit number');
         });
+    });
 
+    describe('POST /api/refresh_token', () => {
+        it('should require a refresh token', async () => {
+            const response = await request(app)
+                .post('/api/refresh_token')
+                .send();
+            expect(response.status).toBe(401);
+            expect(response.body.message).toBe('Refresh Token is required');
+        });
+
+        it('should reject an invalid refresh token', async () => {
+            const falseTestToken = generateFalseRefreshTestToken();
+            const response = await request(app)
+                .post('/api/refresh_token')
+                .set('Cookie', `refreshToken=${falseTestToken}`)
+                .send();
+            expect(response.status).toBe(403);
+            expect(response.body.message).toBe('Invalid Refresh Token!');
+        });
+
+        it('should issue new access & refresh tokens when given valid refresh token', async () => {
+            const testToken = generateRefreshTestToken();
+            const response = await request(app)
+                .post('/api/refresh_token')
+                .set('Cookie', `refreshToken=${testToken}`)
+                .send();
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('accessToken');
+            expect(response.headers['set-cookie']).toEqual(
+                expect.arrayContaining([
+                    expect.stringContaining('refreshToken')
+                ])
+            );
+        });
     });
 });
