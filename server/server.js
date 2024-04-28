@@ -227,6 +227,71 @@ app.get('/api/forms/:entityId', authenticateToken, async (req, res) => {
     }
 });
 
+// majority here taken from add_entity, need to double check everything, update DB to alter, not insert
+app.post('/api/update_entity', authenticateToken, async (req, res) => {
+    try {
+        // Logic check here to make sure entity is good to be added
+        const { entity_id, name, street, city, state, zip, entity_tin, is_individual } = req.body;
+        // Check for required fields
+        if (!name || !street || !city || !state || !zip || !entity_tin) {
+            console.log("name, street, city, state, zip, or entity_tin is missing");
+            return sendError(res, 400, "All fields must be filled");
+        }
+        // Check if TIN or name is already in an entity
+        const userId = req.user.userId;
+        // TODO: this will be a problem, it will find itself and throw an error
+        // but it can't be changed away from that, or it may overwrite other data
+        // need to use entity_id in combination with name and tin
+        const query = `
+            SELECT entity_tin, name
+            FROM entity
+            WHERE user_id = $1
+                AND (entity_tin = $2 OR name = $3)
+                AND entity_id != $4`;
+        const result = await pool.query(query, [userId, entity_tin, name, entity_id]);
+        if (result.rows.length > 0) {
+            // Check which exists already
+            const existsTin = result.rows.some(row => row.entity_tin === entity_tin);
+            const existsName = result.rows.some(row => row.name === name);
+            if (existsTin && existsName) {
+                return sendError(res, 400, "An entity with this TIN and name already exists.");
+            } else if (existsTin) {
+                return sendError(res, 400, "An entity with this TIN already exists.");
+            } else {
+                return sendError(res, 400, "An entity with this name already exists.");
+            }
+        }
+        // Check if TIN is proper length. Format forced through front-end
+        if (is_individual) {
+            if (entity_tin.length !== 11) {
+                return sendError(res, 400, 'An SSN must be 9 digits and formatted xxx-xx-xxxx');
+            }
+        } else {
+            if (entity_tin.length !== 10) {
+                return sendError(res, 400, 'An EIN must be 9 digits and formatted xx-xxxxxxx');
+            }
+        }
+        // Check if State is proper length & format
+        if (!/^[A-Za-z]{2}$/.test(state)) {
+            return sendError(res, 400, 'The State abbreviation should be a 2-letter code (Ex: ID, UT, AZ)');
+        }
+        // Check if ZIP is proper length & format
+        if (!/^\d{5}$/.test(zip)) {
+            return sendError(res, 400, 'The ZIP should be a 5-digit number');
+        }
+        // Update entity
+        const updateQuery = `
+            UPDATE entity
+            SET NAME = $1, street = $2, city = $3, state = $4, zip = $5, entity_tin = $6, is_individual = $7
+            WHERE entity_id = $8 AND user_id = $9`;;
+        await pool.query(updateQuery, [name, street, city, state, zip, entity_tin, is_individual, entity_id, userId]);
+        res.status(201).json({ message: "Entity updated successfully" });
+    } catch (err) {
+        console.log(err)
+        sendError(res, 500, 'Server error occured');
+    }
+});
+
 if (process.env.NODE_ENV !== 'test') {
     const server = app.listen(PORT, () => `Server running on port ${PORT}`);
     module.exports = server;

@@ -7,6 +7,7 @@ export default function viewForms() {
     const router = useRouter();
     const { entityId } = router.query;
     const [entityData, setEntityData] = useState({
+        entity_id: entityId,
         name: '',
         street: '',
         city: '',
@@ -17,6 +18,7 @@ export default function viewForms() {
     });
     const [entityName, setEntityName] = useState('');
     const [formData, setFormData] = useState({
+        entity_id: entityId,
         name: '',
         street: '',
         city: '',
