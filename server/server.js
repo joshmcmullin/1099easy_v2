@@ -20,6 +20,7 @@ app.use(cookieParser());
 
 // Queries postgres db to display all entities for the current user
 app.get('/api/dashboard', authenticateToken, async(req, res) => {
+    logWithUser(req, 'info', 'Dashboard visited')
     try {
         const userId = req.user.userId;
         const result = await pool.query('SELECT * FROM entity WHERE user_id = $1', [userId]);

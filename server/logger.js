@@ -1,7 +1,24 @@
 const winston = require('winston');
+require('winston-daily-rotate-file');
 const path = require('path');
 
 const logsDir = path.join(__dirname, 'logs');
+
+const transportError = new winston.transports.DailyRotateFile({
+    filename: path.join(logsDir, 'error-%DATE%.log'),
+    datePattern: 'YYYY-MM-DD',
+    level: 'error',
+    maxSize: '20m',
+    maxFiles: '1826d' // delete old logs after 5 years (effectively never auto-delete)
+});
+
+const transportCombined = new winston.transports.DailyRotateFile({
+    filename: path.join(logsDir, 'combined-%DATE%.log'),
+    datePattern: 'YYYY-MM-DD',
+    level: 'info',
+    maxSize: '20m',
+    maxFiles: '1826d' // delete old logs after 5 years (effectively never auto-delete)
+});
 
 const logFormat = winston.format.combine(
     winston.format.timestamp({
@@ -11,24 +28,16 @@ const logFormat = winston.format.combine(
 );
 
 const logger = winston.createLogger({
-    //format: winston.format.json(),
     format: logFormat,
-    transports: [
-        // Error
-        new winston.transports.File({ filename: path.join(logsDir, 'error.log'), level: 'error' }),
-        // Info, Warn, & Error
-        new winston.transports.File({ filename: path.join(logsDir, 'combined.log'), level: 'info' }),
+    transports: [ 
+        transportError,
+        transportCombined,
     ],
 });
 
 if (process.env.NODE_ENV === 'development') {
-    // Silly, Debug, Verbose, HTTP, Info, Warn, Error
-    logger.add(new winston.transports.File({ 
-        filename: path.join(logsDir, 'everything.log'), 
-        level: 'silly' 
-    }));
     logger.add(new winston.transports.Console({
-        format: winston.format.simple(),
+        format: logFormat,
         level: 'silly'
     }));
 }
