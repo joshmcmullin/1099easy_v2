@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "target": "es2020",             // Compiled to ECMAScript 2020
+    "module": "commonjs",           // CommonJS for Node.js compatibility
+    "lib": ["dom", "dom.iterable", "esnext"],  // Libs included for Next.js
+    "allowJs": true,                // Allow JavaScript files to be compiled.
+    "skipLibCheck": true,           // Skip type checking of all declaration files
+    "esModuleInterop": true,        // Allows default imports from modules with no default export
+    "allowSyntheticDefaultImports": true, // Allow default imports from modules with no default export
+    "strict": true,                 // Enable all strict type-checking options
+    "forceConsistentCasingInFileNames": true, // Disallow inconsistently-cased references to the same file.
+    "moduleResolution": "node",     // Resolve modules using Node.js's module resolution strategy
+    "resolveJsonModule": true,      // Include modules imported from .json files
+    "isolatedModules": true,        // Ensure that each file can be safely transpiled without relying on other imports
+    "noEmit": true,                 // Do not emit outputs (handled by Next.js for the client side)
+    "jsx": "preserve",              // Preserve JSX to be transformed by Babel later (for Next.js)
+    "incremental": true,            // Enable incremental compilation by saving information about the project graph from the last compilation
+    "outDir": "./dist",             // Redirect output structure to the 'dist' directory
+    "baseUrl": ".",                 // Set base directory for non-relative module names
+    "paths": {                      // Set paths for module aliases, if used
+      "@/components/*": ["components/*"],
+      "@/pages/*": ["pages/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",               // Include Next.js TypeScript definitions
+    "**/*.ts",                     // Include all TypeScript files
+    "**/*.tsx",                    // Include all TypeScript files containing JSX
+    "*.ts",                        // Include all TypeScript files
+    "*.tsx"                        // Include all TypeScript files containing JSX
+  ],
+  "exclude": [
+    "node_modules",                // Exclude the node_modules directory
+    "postgresql_notes",            // Exclude database notes
+    "logs",                        // Exclude logs
+    ".next",                       // Exclude Next.js build output
+    "out"                          // Exclude output directory (if different from 'dist')
+  ]
+}

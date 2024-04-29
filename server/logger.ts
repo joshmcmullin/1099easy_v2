@@ -1,6 +1,8 @@
-const winston = require('winston');
-require('winston-daily-rotate-file');
-const path = require('path');
+import * as winston from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
+import path from 'path';
+import { Request } from 'express';
+import { UserPayload } from './express-augmentations';
 
 const logsDir = path.join(__dirname, 'logs');
 
@@ -9,7 +11,7 @@ const transportError = new winston.transports.DailyRotateFile({
     datePattern: 'YYYY-MM-DD',
     level: 'error',
     maxSize: '20m',
-    maxFiles: '1826d' // delete old logs after 5 years (effectively never auto-delete)
+    maxFiles: '1826d' // Retains logs for 5 years
 });
 
 const transportCombined = new winston.transports.DailyRotateFile({
@@ -17,7 +19,7 @@ const transportCombined = new winston.transports.DailyRotateFile({
     datePattern: 'YYYY-MM-DD',
     level: 'info',
     maxSize: '20m',
-    maxFiles: '1826d' // delete old logs after 5 years (effectively never auto-delete)
+    maxFiles: '1826d' // Retains logs for 5 years
 });
 
 const logFormat = winston.format.combine(
@@ -42,10 +44,13 @@ if (process.env.NODE_ENV === 'development') {
     }));
 }
 
-
-function logWithUser(req, level, message) {
+/**
+ * Logs messages with user information
+ * @param req Express request object
+ * @param level Log level ('info', 'warn', 'error', etc.)
+ * @param message Log message
+ */
+export function logWithUser(req: Request, level: keyof winston.Logger, message: string) {
     const userId = req.user ? req.user.userId : 'unknown';
     logger[level](`User ID: ${userId}: ${message}`);
 }
-
-module.exports = { logWithUser };
