@@ -33,7 +33,7 @@ export default function Signup() {
             // Authenticate with token
             if (response.data.data.accessToken) {
                 localStorage.setItem('accessToken', response.data.data.accessToken);
-                router.push('/api/dashboard');
+                router.push('/dashboard');
             } else {
                 console.error("Token not provided in response");
             }

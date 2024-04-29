@@ -55,7 +55,7 @@ export default function Dashboard() {
                                 <Link href={`/view-forms/${entity.entity_id}`}>View Forms</Link>
                             </td>
                             <td className="p-1 border-2 border-neutral-700">
-                                <Link href={`/update-info/${entity.entity_id}`}>Update Info</Link>
+                                <Link href={`/view-info/${entity.entity_id}`}>View Info</Link>
                             </td>
                         </tr>
                     ))}

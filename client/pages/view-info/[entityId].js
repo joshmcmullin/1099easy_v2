@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import axiosApi from '../../utils/axiosApi';
+import axios from 'axios';
 
 export default function viewForms() {
     const router = useRouter();
@@ -85,7 +86,7 @@ export default function viewForms() {
             return;
         }
         try {
-            const response = await axiosApi.post('', formData); // removed post route to prevent accidents. Update to /api/update_entity
+            const response = await axiosApi.post('/api/update_entity', formData); // removed post route to prevent accidents. Update to /api/update_entity
             router.push('/dashboard');
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
