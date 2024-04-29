@@ -27,7 +27,7 @@ export default function Dashboard() {
     useEffect(() => {
         const fetchEntities = async () => {
             try {
-                const response = await axiosApi.get('/dashboard');
+                const response = await axiosApi.get('/api/dashboard');
                 setEntities(response.data.data as Entity[]);
             } catch (error) {
                 console.error("Failed to fetch entities:", error);

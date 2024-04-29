@@ -27,7 +27,7 @@ export default function Login() {
             // Authenticate with token
             if (response.data.data.accessToken) {
                 localStorage.setItem('accessToken', response.data.data.accessToken);
-                router.push('/dashboard');
+                router.push('/api/dashboard');
             } else {
                 console.error("Token not provided in response");
             }

@@ -18,7 +18,7 @@ app.use(cors({
 app.use(cookieParser());
 
 // Queries postgres db to display all entities for the current user
-app.get('/dashboard', authenticateToken, async(req, res) => {
+app.get('/api/dashboard', authenticateToken, async(req, res) => {
     try {
         const userId = req.user.userId;
         const result = await pool.query('SELECT * FROM entity WHERE user_id = $1', [userId]);

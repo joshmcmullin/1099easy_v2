@@ -48,9 +48,9 @@ function generateFalseRefreshTestToken() {
 
 describe('Server functions', () => {
 
-    describe('GET /dashboard', () => {
+    describe('GET /api/dashboard', () => {
         it('should require authentication', async () => {
-            const response = await request(app).get('/dashboard');
+            const response = await request(app).get('/api/dashboard');
             expect(response.statusCode).toBe(401);
             expect(response.body.message).toEqual('No token provided');
         });
@@ -58,7 +58,7 @@ describe('Server functions', () => {
         it('should reject request on false authentication', async () => {
             const falseTestToken = generateFalseAccessTestToken();
             const response = await request(app)
-                .get('/dashboard')
+                .get('/api/dashboard')
                 .set('Authorization', `Bearer ${falseTestToken}`);
             expect(response.statusCode).toBe(401);
             expect(response.body.message).toEqual('Invalid token');
@@ -67,7 +67,7 @@ describe('Server functions', () => {
         it('should return entities for the authenticated user', async () => {
             const testToken = generateAccessTestToken();
             const response = await request(app)
-                .get('/dashboard')
+                .get('/api/dashboard')
                 .set('Authorization', `Bearer ${testToken}`);
             expect(response.statusCode).toBe(200);
             expect(response.body.data).toBeInstanceOf(Array);
