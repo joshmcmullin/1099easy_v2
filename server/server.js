@@ -8,6 +8,7 @@ const { sendResponse, sendError, authenticateToken, generateTokens } = require('
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+const { logWithUser } = require('./logger');
 const PORT = 8080;
 
 app.use(bodyParser.json());

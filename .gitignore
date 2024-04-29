@@ -11,6 +11,9 @@
 # testing
 /client/coverage
 
+# logging
+/server/logs
+
 # next.js
 /client/.next/
 /client/out/
