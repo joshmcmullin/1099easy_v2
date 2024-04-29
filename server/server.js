@@ -165,7 +165,7 @@ app.post('/api/add_entity', authenticateToken, async (req, res) => {
         // Insert entity
         const insertQuery = 'INSERT INTO entity (name, street, city, state, zip, entity_tin, is_individual, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)';
         await pool.query(insertQuery, [name, street, city, state, zip, entity_tin, is_individual, userId]);
-        res.status(201).json({ message: "Entity added successfully" });
+        sendResponse(res, 201, 'Entity added successfully');
     } catch (err) {
         console.log(err)
         sendError(res, 500, 'Server error occured');
@@ -239,9 +239,6 @@ app.post('/api/update_entity', authenticateToken, async (req, res) => {
         }
         // Check if TIN or name is already in an entity
         const userId = req.user.userId;
-        // TODO: this will be a problem, it will find itself and throw an error
-        // but it can't be changed away from that, or it may overwrite other data
-        // need to use entity_id in combination with name and tin
         const query = `
             SELECT entity_tin, name
             FROM entity
@@ -285,7 +282,7 @@ app.post('/api/update_entity', authenticateToken, async (req, res) => {
             SET NAME = $1, street = $2, city = $3, state = $4, zip = $5, entity_tin = $6, is_individual = $7
             WHERE entity_id = $8 AND user_id = $9`;;
         await pool.query(updateQuery, [name, street, city, state, zip, entity_tin, is_individual, entity_id, userId]);
-        res.status(201).json({ message: "Entity updated successfully" });
+        sendResponse(res, 201, 'Entity updated successfully');
     } catch (err) {
         console.log(err)
         sendError(res, 500, 'Server error occured');
