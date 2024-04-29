@@ -4,10 +4,12 @@ const app = require('./server');
 const jwt = require('jsonwebtoken');
 const pool = require('./databaseConfig');
 
+// Create new transaction prior to every test
 beforeEach(async () => {
     await pool.query('BEGIN');
 });
 
+// Transaction rollback to stop any actual changes to database
 afterEach(async () => {
     await pool.query('ROLLBACK');
 });
@@ -73,7 +75,7 @@ describe('Server functions', () => {
     });
 
     describe('POST /api/login', () => {
-        it('should log in an existing user with correct email, correct pass', async () => {
+        it('should accept login with correct email, correct pass', async () => {
             const response = await request(app)
                 .post('/api/login')
                 .send({ email: process.env.USER_EMAIL, password: process.env.USER_PASS });
@@ -81,7 +83,7 @@ describe('Server functions', () => {
             expect(response.body.data.accessToken).toBeDefined();
         });
 
-        it('should log in an existing user with correct email, other user correct pass', async () => {
+        it('should reject login with correct email, other user correct pass', async () => {
             const response = await request(app)
                 .post('/api/login')
                 .send({ email: process.env.USER_EMAIL, password: process.env.DIFF_USER_PASS });
@@ -95,7 +97,7 @@ describe('Server functions', () => {
             expect(response.statusCode).toBe(401);
         });
 
-        it('should reject login with incorrect email, known correct pass', async () => {
+        it('should reject login with incorrect email, other user correct pass', async () => {
             const response = await request(app)
                 .post('/api/login')
                 .send({ email: process.env.F_USER_EMAIL, password: process.env.USER_PASS });
@@ -124,7 +126,7 @@ describe('Server functions', () => {
     });
     
     describe('POST /api/signup', () => {
-        it('should allow singup & return token with new email, new pass', async () => {
+        it('should allow signup & return token with new email, new pass', async () => {
             const user = {
                 email: `test${Date.now()}@example.com`,     // Dynamic to always be new
                 password: `pass${Date.now()}`,              // Dynamic to always be new
@@ -137,7 +139,7 @@ describe('Server functions', () => {
             expect(response.body.data.accessToken).toBeDefined();
         });
 
-        it('should allow singup & return token with new email, known other user correct pass', async () => {
+        it('should allow signup & return token with new email, other user correct pass', async () => {
             const user = {
                 email: `test${Date.now()}@example.com`,     // Dynamic to always be new
                 password: process.env.USER_PASS,
@@ -175,7 +177,6 @@ describe('Server functions', () => {
         });
     });
 
-    
     describe('POST /api/add_entity', () => {
         // Constants to help standardize and prevent typos
         const name = 'Test name'
@@ -362,7 +363,7 @@ describe('Server functions', () => {
             expect(response.body.message).toBe('Invalid token');
         });
 
-        it('should reject new entity with the same name', async () => {
+        it('should reject new entity when trying to use a duplicate name', async () => {
             const data = {
                 name: process.env.ENTITY_NAME,
                 street: street,
@@ -611,7 +612,7 @@ describe('Server functions', () => {
     });
 
     describe('POST /api/refresh_token', () => {
-        it('should require a refresh token', async () => {
+        it('should reject if no refresh token', async () => {
             const response = await request(app)
                 .post('/api/refresh_token')
                 .send();
@@ -646,7 +647,7 @@ describe('Server functions', () => {
     });
 
     describe('GET /api/entities/:entityId', () => {
-        it('should require authentication', async () => {
+        it('should reject request on no authentication', async () => {
             const entityId = process.env.ENTITY_ID;
             const response = await request(app)
                 .get(`/api/entities/${entityId}`);
@@ -677,7 +678,7 @@ describe('Server functions', () => {
     });
 
     describe('GET /api/forms/:entityId', () => {
-        it('should require authentication', async () => {
+        it('should reject request on no authentication', async () => {
             const entityId = process.env.ENTITY_ID;
             const response = await request(app)
                 .get(`/api/forms/${entityId}`);
