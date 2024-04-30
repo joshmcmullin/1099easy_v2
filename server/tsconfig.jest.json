@@ -1,0 +1,17 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+      "module": "CommonJS",
+      "moduleResolution": "node"
+    },
+    "include": [
+      "*.test.ts",
+      "*.ts"
+    ],
+    "exclude": [
+      "node_modules",
+      "logs",
+      "postgresql_notes"
+    ]
+  }
+  
