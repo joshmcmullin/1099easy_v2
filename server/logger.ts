@@ -6,17 +6,19 @@ import { UserPayload } from './express-augmentations';
 
 const logsDir = path.join(__dirname, 'logs');
 
-const transportError = new winston.transports.DailyRotateFile({
+const transportError = new DailyRotateFile({
     filename: path.join(logsDir, 'error-%DATE%.log'),
     datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
     level: 'error',
     maxSize: '20m',
     maxFiles: '1826d' // Retains logs for 5 years
 });
 
-const transportCombined = new winston.transports.DailyRotateFile({
+const transportCombined = new DailyRotateFile({
     filename: path.join(logsDir, 'combined-%DATE%.log'),
     datePattern: 'YYYY-MM-DD',
+    zippedArchive: true,
     level: 'info',
     maxSize: '20m',
     maxFiles: '1826d' // Retains logs for 5 years

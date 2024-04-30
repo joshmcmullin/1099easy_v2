@@ -1,14 +1,19 @@
-require('dotenv').config({ path: '.env.local' });
-const express = require('express');
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
+
+import express, { Request, Response } from 'express';
 const app = express();
-const cors = require("cors");
-const bodyParser = require('body-parser');
-const pool = require('./databaseConfig');
-const { sendResponse, sendError, authenticateToken, generateTokens } = require('./utility');
-const validator = require('validator');
-const jwt = require('jsonwebtoken');
-const cookieParser = require('cookie-parser');
-const { logWithUser } = require('./logger');
+
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import validator from 'validator';
+import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
+
+import pool from './databaseConfig';
+import { sendResponse, sendError, authenticateToken, generateTokens } from './utility';
+import { logWithUser } from './logger';
+
 const PORT = 8080;
 
 app.use(bodyParser.json());
@@ -19,8 +24,11 @@ app.use(cors({
 app.use(cookieParser());
 
 // Queries postgres db to display all entities for the current user
-app.get('/api/dashboard', authenticateToken, async(req, res) => {
+app.get('/api/dashboard', authenticateToken, async (req: Request, res: Response): Promise<void> => {
     logWithUser(req, 'info', 'Dashboard visited')
+    if (!req.user) {
+        return sendError(res, 404, 'No user found');
+    }
     try {
         const userId = req.user.userId;
         const result = await pool.query('SELECT * FROM entity WHERE user_id = $1', [userId]);
@@ -33,7 +41,7 @@ app.get('/api/dashboard', authenticateToken, async(req, res) => {
 
 // TODO: Update password check to work with encryption
 // TODO: Consult OWASP for security
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, password } = req.body;
         // Check if the email is associated with an account, parameterized to protect from SQL injection
@@ -66,7 +74,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 // Clears refresh token cookie on logout
-app.post('/api/logout', (req, res) => {
+app.post('/api/logout', async (req: Request, res: Response): Promise<void> => {
     res.clearCookie('refreshToken', {
         httpOnly: true,
         secure: process.env.NODE_ENV !== 'development',
@@ -78,7 +86,7 @@ app.post('/api/logout', (req, res) => {
 
 // TODO: Consult OWASP for security
 // TODO: Currently storing passwords in plain text, will need encryption
-app.post('/api/signup', async (req, res) => {
+app.post('/api/signup', async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, password, confirmPassword } = req.body;
         // Check for required fields
@@ -121,7 +129,10 @@ app.post('/api/signup', async (req, res) => {
     }
 });
 
-app.post('/api/add_entity', authenticateToken, async (req, res) => {
+app.post('/api/add_entity', authenticateToken, async (req: Request, res: Response): Promise<void> => {
+    if (!req.user) {
+        return sendError(res, 404, 'No user found');
+    }
     try {
         // Logic check here to make sure entity is good to be added
         const { name, street, city, state, zip, entity_tin, is_individual } = req.body;
@@ -135,7 +146,7 @@ app.post('/api/add_entity', authenticateToken, async (req, res) => {
         const result = await pool.query('SELECT entity_tin, name FROM entity WHERE user_id = $1 AND (entity_tin = $2 OR name = $3)', [userId, entity_tin, name]);
         if (result.rows.length > 0) {
             // Check which exists already
-            const existsTin = result.rows.some(row => row.entity_tin === entity_tin);
+            const existsTin = result.rows.some(row => row.entity_tin === entity_tin); 
             const existsName = result.rows.some(row => row.name === name);
             if (existsTin && existsName) {
                 return sendError(res, 400, "An entity with this TIN and name already exists.");
@@ -174,28 +185,35 @@ app.post('/api/add_entity', authenticateToken, async (req, res) => {
     }
 });
 
-app.post('/api/refresh_token', async (req, res) => {
+interface JWTPayload {
+    userId: number;
+}
+
+app.post('/api/refresh_token', async (req: Request, res: Response): Promise<void> => {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
         return sendError(res, 401, "Refresh Token is required")
     }
     try {
-        const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-        const newAccessToken = jwt.sign({ userId: payload.userId }, process.env.JWT_ACCESS_SECRET, { expiresIn: '15m'});
-        const newRefreshToken = jwt.sign({ userId: payload.userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d'});
+        const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET as string) as JWTPayload;
+        const newAccessToken = jwt.sign({ userId: payload.userId }, process.env.JWT_ACCESS_SECRET as string, { expiresIn: '15m'});
+        const newRefreshToken = jwt.sign({ userId: payload.userId }, process.env.JWT_REFRESH_SECRET as string, { expiresIn: '7d'});
         res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV !== 'development',
             sameSite: 'strict',
             path: '/'
         });
-        return res.json({ accessToken: newAccessToken });
+        res.json({ accessToken: newAccessToken });
     } catch (err) {
-        return res.status(403).json({ message: "Invalid Refresh Token!"});
+        return sendError(res, 403, "Invalid Refresh Token!");
     }
 });
 
-app.get('/api/entities/:entityId', authenticateToken, async (req, res) => {
+app.get('/api/entities/:entityId', authenticateToken, async (req: Request, res: Response): Promise<void> => {
+    if (!req.user) {
+        return sendError(res, 404, "No user found");
+    }
     const { entityId } = req.params;
     const userId = req.user.userId;
     try {
@@ -212,7 +230,10 @@ app.get('/api/entities/:entityId', authenticateToken, async (req, res) => {
     }
 });
 
-app.get('/api/forms/:entityId', authenticateToken, async (req, res) => {
+app.get('/api/forms/:entityId', authenticateToken, async (req: Request, res: Response): Promise<void> => {
+    if (!req.user) {
+        return sendError(res, 404, "No user found");
+    }
     const { entityId } = req.params;
     const userId = req.user.userId;
     try {
@@ -230,7 +251,10 @@ app.get('/api/forms/:entityId', authenticateToken, async (req, res) => {
 });
 
 // majority here taken from add_entity, need to double check everything, update DB to alter, not insert
-app.post('/api/update_entity', authenticateToken, async (req, res) => {
+app.post('/api/update_entity', authenticateToken, async (req: Request, res: Response): Promise<void> => {
+    if (!req.user) {
+        return sendError(res, 404, "No user found");
+    }
     try {
         // Logic check here to make sure entity is good to be added
         const { entity_id, name, street, city, state, zip, entity_tin, is_individual } = req.body;

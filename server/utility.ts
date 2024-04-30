@@ -53,14 +53,19 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
     });
 }
 
-// Utility function for generating access & refresh tokens for authentication
+interface User {
+    user_id: number;
+    email: string;
+    password: string;
+}
+
 /**
  * Generates access & refresh tokens
  * @param user Current user
  * @returns Object with accessToken & refreshToken
  */
-export function generateTokens(user: UserPayload): { accessToken: string; refreshToken: string} {
-    const accessToken = jwt.sign({ userId: user.userId }, process.env.JWT_ACCESS_SECRET as string, { expiresIn: '15m' });
-    const refreshToken = jwt.sign({ userId: user.userId }, process.env.JWT_REFRESH_SECRET as string, { expiresIn: '7d' });
+export function generateTokens(user: User): { accessToken: string; refreshToken: string} {
+    const accessToken = jwt.sign({ userId: user.user_id }, process.env.JWT_ACCESS_SECRET as string, { expiresIn: '15m' });
+    const refreshToken = jwt.sign({ userId: user.user_id }, process.env.JWT_REFRESH_SECRET as string, { expiresIn: '7d' });
     return { accessToken, refreshToken };
 }
