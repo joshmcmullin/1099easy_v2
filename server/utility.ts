@@ -53,6 +53,13 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
     });
 }
 
+/**
+ * Represents the user structure.
+ * @interface
+ * @property user_id - The unique identifier of the user.
+ * @property email - The user's unique email address.
+ * @property password - The user's confirmed password.
+ */
 interface User {
     user_id: number;
     email: string;

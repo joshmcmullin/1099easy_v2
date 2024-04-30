@@ -23,7 +23,13 @@ app.use(cors({
 }));
 app.use(cookieParser());
 
-// Queries postgres db to display all entities for the current user
+/**
+ * Queries the database to retrieve all entities for the current user.
+ * @route GET /api/dashboard
+ * @param req Express request object.
+ * @param res Express response object.
+ * @returns A promise that resolves when the operation is complete.
+ */
 app.get('/api/dashboard', authenticateToken, async (req: Request, res: Response): Promise<void> => {
     logWithUser(req, 'info', 'Dashboard visited')
     if (!req.user) {
@@ -31,7 +37,11 @@ app.get('/api/dashboard', authenticateToken, async (req: Request, res: Response)
     }
     try {
         const userId = req.user.userId;
-        const result = await pool.query('SELECT * FROM entity WHERE user_id = $1', [userId]);
+        const query = `
+            SELECT *
+            FROM entity
+            WHERE user_id = $1`;
+        const result = await pool.query(query, [userId]);
         sendResponse(res, 200, result.rows);
     } catch (err) {
         console.error(err);
@@ -39,13 +49,24 @@ app.get('/api/dashboard', authenticateToken, async (req: Request, res: Response)
     }
 });
 
-// TODO: Update password check to work with encryption
-// TODO: Consult OWASP for security
+/**
+ * Handles login info, queries the database to make sure account exists, and generates tokens.
+ * @route POST /api/login
+ * @param req Express request object.
+ * @param res Express response object.
+ * @returns A promise that resolves when the operation is complete.
+ * @todo update password check to work with encryption.
+ * @todo consult OWASP for security principles.
+ */
 app.post('/api/login', async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, password } = req.body;
-        // Check if the email is associated with an account, parameterized to protect from SQL injection
-        const userResult = await pool.query('SELECT * FROM app_user WHERE email = $1', [email]);
+        // Check if the email is associated with an account
+        const query = `
+            SELECT *
+            FROM app_user
+            WHERE email = $1`;
+        const userResult = await pool.query(query, [email]);
         if (userResult.rows.length === 0) {
             console.log("Account not found");
             return sendError(res, 404, 'Account not found');
@@ -73,7 +94,13 @@ app.post('/api/login', async (req: Request, res: Response): Promise<void> => {
     }
 });
 
-// Clears refresh token cookie on logout
+/**
+ * Clears the refresh token cookie on logout.
+ * @route POST /api/logut
+ * @param req Express request object.
+ * @param res Express response object.
+ * @returns A promise that resolves when the operation is complete.
+ */
 app.post('/api/logout', async (req: Request, res: Response): Promise<void> => {
     res.clearCookie('refreshToken', {
         httpOnly: true,
@@ -84,8 +111,16 @@ app.post('/api/logout', async (req: Request, res: Response): Promise<void> => {
     sendResponse(res, 200, 'Logout successful');
 });
 
-// TODO: Consult OWASP for security
-// TODO: Currently storing passwords in plain text, will need encryption
+/**
+ * Handles signup logic, validating email & password, inserting account information
+ * into the database, and generating tokens.
+ * @route POST /api/signup
+ * @param req Express request object.
+ * @param res Express response object.
+ * @returns A promise that resolves when the operation is complete.
+ * @todo Utilize encryption to store passwords safely.
+ * @todo Consult OWASP for security.
+ */
 app.post('/api/signup', async (req: Request, res: Response): Promise<void> => {
     try {
         const { email, password, confirmPassword } = req.body;
@@ -104,13 +139,21 @@ app.post('/api/signup', async (req: Request, res: Response): Promise<void> => {
             return sendError(res, 400, 'Passwords need to match');
         }
         // Check if the email is already in use
-        const emailCheckResult = await pool.query('SELECT email FROM app_user WHERE email = $1', [email]);
+        const query = `
+            SELECT email
+            FROM app_user
+            WHERE email = $1`;
+        const emailCheckResult = await pool.query(query, [email]);
         if (emailCheckResult.rows.length > 0) {
             console.log("Email already in use");
             return sendError(res, 400, 'Account already associated with this email');
         }
         // Insert new user into the database
-        const insertResult = await pool.query('INSERT INTO app_user (email, password) VALUES ($1, $2) RETURNING *', [email, password]);
+        const insertQuery = `
+            INSERT INTO app_user (email, password)
+            VALUES ($1, $2)
+            RETURNING *`;
+        const insertResult = await pool.query(insertQuery, [email, password]);
         const user = insertResult.rows[0];
         // Generate authentication tokens
         const tokens = generateTokens(user);
@@ -129,6 +172,15 @@ app.post('/api/signup', async (req: Request, res: Response): Promise<void> => {
     }
 });
 
+/**
+ * Handles logic for adding a new entity. Validates information and checks if
+ * an entity exists with this name or TIN already. Inserts information into
+ * database if not.
+ * @route POST /api/add_entity
+ * @param req Express request object.
+ * @param res Express response object.
+ * @returns A promise that resolved when the operation is complete.
+ */
 app.post('/api/add_entity', authenticateToken, async (req: Request, res: Response): Promise<void> => {
     if (!req.user) {
         return sendError(res, 404, 'No user found');
@@ -143,7 +195,12 @@ app.post('/api/add_entity', authenticateToken, async (req: Request, res: Respons
         }
         // Check if TIN or name is already in an entity
         const userId = req.user.userId;
-        const result = await pool.query('SELECT entity_tin, name FROM entity WHERE user_id = $1 AND (entity_tin = $2 OR name = $3)', [userId, entity_tin, name]);
+        const query = `
+            SELECT entity_tin, name
+            FROM entity
+            WHERE user_id = $1
+                AND (entity_tin = $2 OR name = $3)`;
+        const result = await pool.query(query, [userId, entity_tin, name]);
         if (result.rows.length > 0) {
             // Check which exists already
             const existsTin = result.rows.some(row => row.entity_tin === entity_tin); 
@@ -174,9 +231,10 @@ app.post('/api/add_entity', authenticateToken, async (req: Request, res: Respons
         if (!/^\d{5}$/.test(zip)) {
             return sendError(res, 400, 'The ZIP should be a 5-digit number');
         }
-        
         // Insert entity
-        const insertQuery = 'INSERT INTO entity (name, street, city, state, zip, entity_tin, is_individual, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)';
+        const insertQuery = `
+            INSERT INTO entity (name, street, city, state, zip, entity_tin, is_individual, user_id)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`;
         await pool.query(insertQuery, [name, street, city, state, zip, entity_tin, is_individual, userId]);
         sendResponse(res, 201, 'Entity added successfully');
     } catch (err) {
@@ -185,10 +243,22 @@ app.post('/api/add_entity', authenticateToken, async (req: Request, res: Respons
     }
 });
 
+/**
+ * Represents the payload structure of JWT used for authentication.
+ * @interface
+ * @property userId - The unique identifier of the user.
+ */
 interface JWTPayload {
     userId: number;
 }
 
+/**
+ * Handles the refreshing of access tokens using a refresh token.
+ * @route POST /api/refresh_token
+ * @param req Express request object.
+ * @param res Express response object.
+ * @returns A promise that resolves when the operation is complete.
+ */
 app.post('/api/refresh_token', async (req: Request, res: Response): Promise<void> => {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
@@ -210,6 +280,14 @@ app.post('/api/refresh_token', async (req: Request, res: Response): Promise<void
     }
 });
 
+/**
+ * Retrieves all entities that relate to a specific entity id and 
+ * user id.
+ * @route GET /api/entities/:entityId
+ * @param req Express request object.
+ * @param res Express response object.
+ * @returns A promise that resolves when the operation is complete.
+ */
 app.get('/api/entities/:entityId', authenticateToken, async (req: Request, res: Response): Promise<void> => {
     if (!req.user) {
         return sendError(res, 404, "No user found");
@@ -217,11 +295,15 @@ app.get('/api/entities/:entityId', authenticateToken, async (req: Request, res: 
     const { entityId } = req.params;
     const userId = req.user.userId;
     try {
-        const query = 'SELECT * FROM entity WHERE entity_id = $1 AND user_id = $2';
+        const query = `
+            SELECT *
+            FROM entity
+            WHERE entity_id = $1
+                AND user_id = $2`;
         const result = await pool.query(query, [entityId, userId]);
         if (result.rows.length > 0) {
             sendResponse(res, 200, result.rows[0]);
-        } else { // This should NEVER trigger or an entity that doesn't exist is on the dashboard!
+        } else { // This should NEVER trigger else an entity that doesn't exist is on the dashboard!
             return sendError(res, 404, 'Entity not found.'); 
         }
     } catch (err) {
@@ -230,6 +312,14 @@ app.get('/api/entities/:entityId', authenticateToken, async (req: Request, res: 
     }
 });
 
+/**
+ * Retrieves all forms that relate to a specific entity id
+ * and user id.
+ * @route GET /api/forms/:entityId
+ * @param req Express request object.
+ * @param res Express response object.
+ * @return A promise that resolves when the operation is complete.
+ */
 app.get('/api/forms/:entityId', authenticateToken, async (req: Request, res: Response): Promise<void> => {
     if (!req.user) {
         return sendError(res, 404, "No user found");
@@ -237,7 +327,11 @@ app.get('/api/forms/:entityId', authenticateToken, async (req: Request, res: Res
     const { entityId } = req.params;
     const userId = req.user.userId;
     try {
-        const query = 'SELECT * FROM form WHERE payer_id = $1 AND user_id = $2';
+        const query = `
+            SELECT *
+            FROM form
+            WHERE payer_id = $1
+                AND user_id = $2`;
         const result = await pool.query(query, [entityId, userId]);
         if (result.rows.length > 0) {
             sendResponse(res, 200, result.rows);
@@ -251,6 +345,13 @@ app.get('/api/forms/:entityId', authenticateToken, async (req: Request, res: Res
 });
 
 // majority here taken from add_entity, need to double check everything, update DB to alter, not insert
+/**
+ * Handles updating an entity's information.
+ * @route POST /api/update_entity
+ * @param req Express request object.
+ * @param res Express response object.
+ * @return A promise that resolves when the operation is complete.
+ */
 app.post('/api/update_entity', authenticateToken, async (req: Request, res: Response): Promise<void> => {
     if (!req.user) {
         return sendError(res, 404, "No user found");
