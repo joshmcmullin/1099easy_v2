@@ -3,14 +3,19 @@ import { mockRequest, mockResponse } from './__testing__/__mocks__/mockReqRes';
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-jest.mock('jsonwebtoken', () => ({
-    ...jest.requireActual('jsonwebtoken'),
-    sign: jest.fn((payload: any, secret: string, options?: jwt.SignOptions) => {
-        return `token-${payload.user_id}-${options?.expiresIn}`;
-    })
-}));
+jest.mock('jsonwebtoken', () => {
+    const originalJwt = jest.requireActual('jsonwebtoken');
+    return {
+        ...originalJwt,
+        verify: jest.fn(),
+        sign: jest.fn((payload: any, secret: string, options?: jwt.SignOptions) => {
+            return `token-${payload.userId}-${options?.expiresIn}`;
+        })
+    };
+});
 
 const mockVerify = jwt.verify as jest.MockedFunction<typeof jwt.verify>;
+
 
 describe('Utility functions', () => {
     let res: Partial<Response>;
@@ -18,6 +23,7 @@ describe('Utility functions', () => {
     let next: jest.Mock<NextFunction>;
 
     beforeEach(() => {
+        jest.clearAllMocks();
         res = mockResponse();
         req = mockRequest({ headers: { authorization: 'Bearer fakeToken' } });
         next = jest.fn();

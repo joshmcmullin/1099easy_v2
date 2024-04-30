@@ -72,6 +72,7 @@ interface User {
  * @returns Object with accessToken & refreshToken
  */
 export function generateTokens(user: User): { accessToken: string; refreshToken: string} {
+    console.log(user.user_id);
     const accessToken = jwt.sign({ userId: user.user_id }, process.env.JWT_ACCESS_SECRET as string, { expiresIn: '15m' });
     const refreshToken = jwt.sign({ userId: user.user_id }, process.env.JWT_REFRESH_SECRET as string, { expiresIn: '7d' });
     return { accessToken, refreshToken };
