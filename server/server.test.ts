@@ -1,8 +1,10 @@
-require('dotenv').config({ path: '.env.local' });
-const request = require('supertest');
-const app = require('./server');
-const jwt = require('jsonwebtoken');
-const pool = require('./databaseConfig');
+import dotenv from 'dotenv';
+import request from 'supertest';
+import { app } from './server';
+import jwt from 'jsonwebtoken';
+import pool from './databaseConfig';
+
+dotenv.config({ path: '.env.local' });
 
 // Create new transaction prior to every test
 beforeEach(async () => {
@@ -20,6 +22,9 @@ function generateAccessTestToken() {
         email: process.env.USER_EMAIL,
         password: process.env.USER_PASS
     }
+    if (!process.env.JWT_ACCESS_SECRET) {
+        throw new Error("JWT Access Secret is not defined.");
+    }
     return jwt.sign(userPayload, process.env.JWT_ACCESS_SECRET, { expiresIn: '1h' });
 };
 
@@ -36,6 +41,9 @@ function generateRefreshTestToken() {
     const userPayload = {
         userId: process.env.USER_ID
     };
+    if (!process.env.JWT_REFRESH_SECRET) {
+        throw new Error("JWT Refresh Secret is not defined.");
+    }
     return jwt.sign(userPayload, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
 };
 

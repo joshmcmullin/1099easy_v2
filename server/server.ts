@@ -417,8 +417,7 @@ app.post('/api/update_entity', authenticateToken, async (req: Request, res: Resp
 });
 
 if (process.env.NODE_ENV !== 'test') {
-    const server = app.listen(PORT, () => `Server running on port ${PORT}`);
-    module.exports = server;
-} else {
-    module.exports = app;
+    app.listen(PORT, () => `Server running on port ${PORT}`);
 }
+
+export { app };
