@@ -1,14 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import axiosApi from '../../utils/axiosApi';
 import axios from 'axios';
 
+interface Form {
+    form_id: string;
+    name: string;
+    tin: string;
+    type: string;
+}
+
 export default function viewForms() {
     const router = useRouter();
     const { entityId } = router.query;
-    const [entityName, setEntityName] = useState('');
-    const [forms, setForms] = useState([]);
+    const [entityName, setEntityName] = useState<string>('');
+    const [forms, setForms] = useState<Form[]>([]);
 
     useEffect(() => {
         if (entityId) {

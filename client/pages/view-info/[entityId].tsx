@@ -1,8 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import axiosApi from '../../utils/axiosApi';
 import axios from 'axios';
+
+interface EntityData {
+    entity_id: string | string[] | undefined;
+    name: string;
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+    entity_tin: string;
+    is_individual: boolean;
+}
 
 export default function viewForms() {
     const router = useRouter();
@@ -17,20 +28,11 @@ export default function viewForms() {
         entity_tin: '',
         is_individual: true,
     });
-    const [entityName, setEntityName] = useState('');
-    const [formData, setFormData] = useState({
-        entity_id: entityId,
-        name: '',
-        street: '',
-        city: '',
-        state: '',
-        zip: '',
-        entity_tin: '',
-        is_individual: true,
-    });
-    const [showUpdateForm, setShowUpdateForm] = useState(false);
+    const [entityName, setEntityName] = useState<string>('');
+    const [formData, setFormData] = useState<EntityData>({ ...entityData });
+    const [showUpdateForm, setShowUpdateForm] = useState<boolean>(false);
 
-    const handleChange = (e) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, checked } = e.target;
         // Clear the TIN field whenever checkbox changes
         if (name === 'is_individual') {
@@ -47,7 +49,7 @@ export default function viewForms() {
         }
     };
     
-    const handleEntityTINChange = (e) => {
+    const handleEntityTINChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { value } = e.target;
         let digits = value.replace(/\D/g, '');
         let formattedInput = '';
@@ -77,7 +79,7 @@ export default function viewForms() {
         setFormData({ ...formData, entity_tin: formattedInput });
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         // Validation checks
         if (!formData.name || !formData.street || !formData.city || !formData.state || !formData.zip || !formData.entity_tin) {
@@ -86,7 +88,7 @@ export default function viewForms() {
             return;
         }
         try {
-            const response = await axiosApi.post('/api/update_entity', formData); // removed post route to prevent accidents. Update to /api/update_entity
+            const response = await axiosApi.post('/api/update_entity', formData);
             router.push('/dashboard');
         } catch (error) {
             if (axios.isAxiosError(error) && error.response) {
@@ -106,6 +108,7 @@ export default function viewForms() {
                 .then(response => {
                     setEntityName(response.data.data.name);
                     setEntityData({
+                        ...entityData,
                         name: response.data.data.name,
                         street: response.data.data.street,
                         city: response.data.data.city,
