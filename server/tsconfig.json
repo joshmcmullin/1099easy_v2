@@ -5,7 +5,6 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "lib": ["es2020"],
-    "outDir": "./dist/server",
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
@@ -17,11 +16,8 @@
   },
   "exclude": [
     "node_modules",
-    "*.test.ts",
-    "*.test.tsx",
     "logs",
     "postgresql_notes",
-    ".env.local",
-    "__testing__"
+    ".env.local"
   ]
 }

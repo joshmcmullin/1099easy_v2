@@ -3,12 +3,16 @@
     "module": "commonjs",
     "esModuleInterop": true,
     "target": "es6",
-    "jsx": "react-jsx",
     "strict": true,
     "moduleResolution": "node",
-    "skipLibCheck": true,
-    "outDir": "./build"
+    "skipLibCheck": true
   },
-  "include": ["src/**/*", "tests/**/*"],
-  "exclude": ["node_modules", "build"]
+  "include": [
+    "*.test.ts",
+    "./__testing__/__mocks__/*.test.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "build"
+  ]
 }
