@@ -1,23 +1,34 @@
 {
   "compilerOptions": {
+    "allowUnreachableCode": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "useUnknownInCatchVariables": true,
+    "rootDir": "./",
+    "outDir": "./dist/",
+    "baseUrl": "./",
+    "noEmit": false,
     "target": "es2020",
-    "module": "commonjs",
+    "module": "nodenext",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "lib": ["es2020"],
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "preserve",
     "incremental": true
   },
+  "include": [
+    "**/*.ts",
+    "*.ts"
+  ],
   "exclude": [
-    "node_modules",
-    "logs",
-    "postgresql_notes",
-    ".env.local"
+    "__testing__/**",
+    "node_modules/**",
+    "**/*.test.ts",
+    "**/*.spec.ts"
   ]
 }
